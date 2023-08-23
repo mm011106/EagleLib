@@ -121,19 +121,9 @@ void Measurement::clk_in(void){
         //  1秒に一回計測
         if (cont_meas_inteval_counter++ > CONT_MEAS_INTERVAL){
             cont_meas_inteval_counter=0;
-            if (getCurrentSourceStatus()){
-                sensor_error = false;
-                read_level();
-            } else {
-                sensor_error = true;
-            }
+            shoud_measure = true;
         };
-        if (sensor_error){
-            Serial.println("CONT Treminate by error.");
-            //センサエラー（測定中にエラー発生）なら計測を終了して帰る
-            setCommand(Measurement::ECommand::CONTEND);
-            return;
-        };
+
     };
 
     // 1回計測の処理
@@ -141,33 +131,16 @@ void Measurement::clk_in(void){
         // 熱伝搬時間の1/3ごとに計測
         if (single_meas_counter++ < single_meas_period){
             if ( (single_meas_counter % single_meas_interval) == 0){
-                if (getCurrentSourceStatus()){
-                    sensor_error = false;
-                    read_level();
-                } else {
-                    sensor_error = true;
-                }
+                single_last_meas = false;
+                shoud_measure = true;
             }
         }else{
-            if (getCurrentSourceStatus()){
-                sensor_error = false;
-                read_level();
-            } else {
-                sensor_error = true;
-            }
-            present_mode = EModes::TIMER;
-            busy_now = false;
-            single_measurement = false;
-        };
-        if (sensor_error){
-            Serial.println("SINGLE Treminate by error.");
-            //センサエラー（測定中にエラー発生）なら計測を終了して帰る
-            currentOff();
-            single_measurement = false;
+            single_last_meas = true;
+            shoud_measure = true;
 
-            return;
         };
     };
+
 
     // // リソースの占有解放、busy信号の作成
     // if(acquire_resorce){
@@ -201,15 +174,16 @@ void Measurement::setCommand(Measurement::ECommand command){
         if (!busy_now){
             present_mode = EModes::MANUAL;
             busy_now = true;
-            if (measSingle()){
-                Serial.println("Single MEAS complete.");
+            if (currentOn()){
+                Serial.println("SINGLE Start.");
+                single_meas_counter = 0;
+                single_measurement = true;
                 sensor_error = false;
-            } else {
-                Serial.println("Single MEAS ERROR.");
+            }else{
+                Serial.println("SINGLE Meas ERROR. terminate");
                 sensor_error = true;
+                single_measurement = false;
             }
-            present_mode = EModes::TIMER;
-            busy_now = false;
         } else {
             Serial.println("Fail: measure command while busy.");
         }
@@ -258,6 +232,57 @@ void Measurement::setCommand(Measurement::ECommand command){
         break;
     }
 }
+
+/*!
+ * @brief 実際の計測動作を行う
+ */
+void Measurement::executeMeasurement(void){
+    shoud_measure = false;
+    if (getCurrentSourceStatus()){
+        sensor_error = false;
+        uint16_t result = read_level();
+    } else {
+        sensor_error = true;
+    }
+
+    // Sensorエラーの場合（異常終了）
+    if (sensor_error){
+        if (cont_measurement){
+            Serial.println("CONT Treminate by error.");
+            //センサエラー（測定中にエラー発生）なら計測を終了して帰る
+            setCommand(Measurement::ECommand::CONTEND);
+            // return;
+        }
+
+        if (single_measurement){
+            Serial.println("CONT Treminate by error.");
+            //センサエラー（測定中にエラー発生）なら計測を終了して帰る
+            currentOff();
+            single_measurement = false;
+            present_mode = EModes::TIMER;
+            busy_now = false;
+        }
+    }
+
+    // 一回計測の最終計測の場合は一回計測のクロージング処理
+    if (single_last_meas){
+        single_last_meas = false;
+        currentOff();
+        single_meas_counter = 0;
+        present_mode = EModes::TIMER;
+        busy_now = false;
+        single_measurement = false;
+    }
+
+    // 測定結果を出力する処理
+    // 電圧モニタへの出力
+    setVmon(result);
+    // LCD,UART向けの出力方法を考える
+    // フラグを出力(フラグ、getter必要)
+    // 結果を出力（getter必要）
+}
+
+
 
 /*!
  * @brief 電流源をonにする

@@ -95,6 +95,9 @@ class Measurement {
 
     void setCommand(Measurement::ECommand command);
 
+    // 実際の測定を実行
+    void executeMeasurement(void);
+
     EModes getMode(void){
         return present_mode;
     };
@@ -136,6 +139,9 @@ class Measurement {
     // リソースが命令実行中
     bool busy_now = false;
 
+    //  外部への測定指示フラグ
+    bool shoud_measure = false; 
+
     // 連続計測動作
     bool cont_measurement = false;
     uint16_t cont_meas_inteval_counter = 0;
@@ -145,6 +151,7 @@ class Measurement {
     uint16_t single_meas_counter = 0;
     uint16_t single_meas_interval = 0;
     uint16_t single_meas_period = 0;
+    bool single_last_meas = false;
 
 
     // 表示停止依頼
