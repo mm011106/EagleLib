@@ -155,6 +155,8 @@ void Measurement::clk_in(void){
             } else {
                 sensor_error = true;
             }
+            present_mode = EModes::TIMER;
+            busy_now = false;
             single_measurement = false;
         };
         if (sensor_error){
