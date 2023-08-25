@@ -81,7 +81,7 @@ class EH_LED {
         * @return   true:指示受付   false:指示却下
         */
         bool turnOn(void){
-            while(busy_now){asm("nop");}
+            // while(busy_now){asm("nop");}
             LED_state=true;
             busy_now = true;
             return true;
@@ -93,7 +93,7 @@ class EH_LED {
         * @return   true:指示受付   false:指示却下
         */
         bool turnOff(void){
-            while(busy_now){asm("nop");}
+            // while(busy_now){asm("nop");}
             LED_state=false;
             busy_now = true;
             return true;
