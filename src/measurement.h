@@ -14,6 +14,8 @@
 #ifndef _MEASUREMENT_H_
 #define _MEASUREMENT_H_
 
+#include <Arduino.h>
+
 // デバイスのドライバ
 #include <Adafruit_ADS1015.h>   // ADC 16bit diff - 2ch
 #include <Adafruit_MCP23008.h>  // PIO 8bit
