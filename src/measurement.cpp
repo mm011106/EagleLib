@@ -72,7 +72,14 @@ void Measurement::init(void){
     sensor_resistance = SENSOR_UNIT_IMP * (float)p_parameter->sensor_length;
     sensor_heat_propagation_time = p_parameter->sensor_length * (uint16_t)(1/HEAT_PROPERGATION_VEROCITY * 1000.0 * 1.2); // [ms]
     single_meas_period = sensor_heat_propagation_time/10;//[CLK count, clk=10ms cycle]
-    single_meas_interval = single_meas_period/3;//[CLK count]
+    // 一回計測時の伝搬時間内の計測周期を決める 3回計測することを基本にする
+    // ！！要検討！！   6インチぐらいの短いセンサだと伝搬時間内に３回測定できない
+    //      0.5秒ぐらいのLowlimitを設ける
+    if (single_meas_period < 150){ // 1.5秒より短い伝搬時間の場合
+        single_meas_interval = 50; // 0.5s周期
+    } else{
+        single_meas_interval = single_meas_period/3;//[CLK count]   
+    }
 
     Serial.println(sensor_heat_propagation_time);
     Serial.print("Sensor Length:"); Serial.println(p_parameter->sensor_length);
@@ -117,27 +124,39 @@ void Measurement::clk_in(void){
  
     //  CLKに同期した処理を記載
     // 連続計測の処理
-    if (cont_measurement){
+    if (present_mode == EModes::CONTINUOUS){
         //  1秒に一回計測
         if (cont_meas_inteval_counter++ > CONT_MEAS_INTERVAL){
             cont_meas_inteval_counter=0;
-            shoud_measure = true;
+            should_measure = true;
         };
 
     };
 
-    // 1回計測の処理
-    if (single_measurement){
+    // 1回計測の処理     
+    if (present_mode == EModes::MANUAL){
         // 熱伝搬時間の1/3ごとに計測
-        if (single_meas_counter++ < single_meas_period){
+        //      伝搬時間中に３回計測して、２CLK余分に時間待ってから最終計測(else節）を実行
+        //      should_measureフラグがCLK時間で連続して立たないように配慮
+        if (single_meas_counter++ <= (single_meas_period + 2)){
             if ( (single_meas_counter % single_meas_interval) == 0){
                 single_last_meas = false;
-                shoud_measure = true;
+                should_measure = true;
+                Serial.print("preMeas ");
             }
         }else{
-            single_last_meas = true;
-            shoud_measure = true;
+            // 最終の計測：ここでの計測が測定値として保持される
 
+            // 上の測定要求と以下の測定要求の間は最短で30ms(2CLK余計に回って次のCLKでここにくる)しかないので
+            // 上の測定を実行している可能性がある。
+            // single_last_measは一回tureになったら、それ以降再設定しないように処理
+            // 計測処理に時間が必要なので、複数回呼ばれて計測を複数回実行してしまうこを阻止する
+            if (!single_last_meas){
+                single_last_meas = true;
+                should_measure = true;
+                // exec_single_measurement = false;
+                Serial.print("lastMeas ");
+            }
         };
     };
 
@@ -175,14 +194,13 @@ void Measurement::setCommand(Measurement::ECommand command){
             present_mode = EModes::MANUAL;
             busy_now = true;
             if (currentOn()){
-                Serial.println("SINGLE Start.");
+                Serial.print("SINGLE Start. ");Serial.println(micros());
                 single_meas_counter = 0;
-                single_measurement = true;
                 sensor_error = false;
             }else{
                 Serial.println("SINGLE Meas ERROR. terminate");
                 sensor_error = true;
-                single_measurement = false;
+                terminateMeasurement();
             }
         } else {
             Serial.println("Fail: measure command while busy.");
@@ -193,12 +211,13 @@ void Measurement::setCommand(Measurement::ECommand command){
         if(!busy_now){
             present_mode = EModes::CONTINUOUS;
             busy_now = true;
-            if (contSTART()){
+            if (currentOn()){
                 Serial.println("CONT Start.");
                 sensor_error = false;
             } else {
                 Serial.println("CONT Meas ERROR. terminate");
                 sensor_error = true;
+                terminateMeasurement();
             }
         } else {
             Serial.println("Fail: measure command while busy.");
@@ -207,23 +226,25 @@ void Measurement::setCommand(Measurement::ECommand command){
     
     case Measurement::ECommand::CONTEND :
         if(busy_now){
-            if (contEND()){
-                Serial.println("CONT END.");
-                sensor_error = false;
-                present_mode = EModes::TIMER;
-                busy_now = false;
-            } else {
-                Serial.println("CONT Meas END ERROR.");
-                sensor_error = true;
-            }
+            terminateMeasurement();
         } else {
             Serial.println("Fail: CONT END command while ready.");
         }
         break;
 
+    case Measurement::ECommand::TERMINATE :
+        if(busy_now){
+            Serial.println("TERMINATE.");
+            terminateMeasurement();
+        } else {
+            Serial.println("Fail: TERMINATE command while ready.");
+        }
+
+        break;
+
     case Measurement::ECommand::IDLE :
         Serial.print("busy:");Serial.print(busy_now);Serial.print(" - error:");Serial.print(sensor_error);
-        Serial.print(" - cont:");Serial.println(cont_measurement);
+        // Serial.print(" - cont:");Serial.println(exec_cont_measurement);
         Serial.println("Measurement status did not change.");
         break;
 
@@ -234,44 +255,47 @@ void Measurement::setCommand(Measurement::ECommand command){
 }
 
 /*!
- * @brief 実際の計測動作を行う
+ * @brief 実際の計測動作を行う  エラー時は測定を中断する    一回計測の終了判断を行い終了させる
+ * @note 実行には100ms程度かかる
  */
 void Measurement::executeMeasurement(void){
-    shoud_measure = false;
+    // 測定指示フラグをここでクリア
+    // これ以降のタイミングでフラグが立てば、それは保持される
+    // フラグが立っている時間は最長で、CLKisrの処理時間、メインルーチンへの復帰時間、メイン内部処理一巡
+    // となり、10ms以下を期待できる。
+    should_measure = false;
+    bool the_last_meas = single_last_meas;
+
+    // for debug
+    Serial.print("execMeas::start "); Serial.print(micros());Serial.print(" ");
+
+    uint16_t result = 0;
     if (getCurrentSourceStatus()){
         sensor_error = false;
-        uint16_t result = read_level();
+        result = read_level();
     } else {
         sensor_error = true;
     }
 
-    // Sensorエラーの場合（異常終了）
+    // Sensorエラー処理（異常終了）
     if (sensor_error){
-        if (cont_measurement){
-            Serial.println("CONT Treminate by error.");
-            //センサエラー（測定中にエラー発生）なら計測を終了して帰る
-            setCommand(Measurement::ECommand::CONTEND);
-            // return;
-        }
-
-        if (single_measurement){
-            Serial.println("CONT Treminate by error.");
-            //センサエラー（測定中にエラー発生）なら計測を終了して帰る
-            currentOff();
-            single_measurement = false;
-            present_mode = EModes::TIMER;
-            busy_now = false;
-        }
+        Serial.print("-sensorError  - ");
+        //センサエラー（測定中にエラー発生）なら計測を終了して帰る
+        Serial.println("Measurement Treminate by error.");
+        terminateMeasurement();
+        
+        // Vmonにエラーを出力
+        void setVmonFailed(void);
+        return;
     }
 
     // 一回計測の最終計測の場合は一回計測のクロージング処理
-    if (single_last_meas){
+    if (the_last_meas){
+        Serial.print("-single:last- ");
         single_last_meas = false;
-        currentOff();
         single_meas_counter = 0;
-        present_mode = EModes::TIMER;
-        busy_now = false;
-        single_measurement = false;
+        should_measure = false;//最終計測なので、計測中に入った測定要求は無視する
+        terminateMeasurement();
     }
 
     // 測定結果を出力する処理
@@ -280,9 +304,9 @@ void Measurement::executeMeasurement(void){
     // LCD,UART向けの出力方法を考える
     // フラグを出力(フラグ、getter必要)
     // 結果を出力（getter必要）
+
+    Serial.println("execMeas::End ");
 }
-
-
 
 /*!
  * @brief 電流源をonにする
@@ -290,7 +314,17 @@ void Measurement::executeMeasurement(void){
 bool Measurement::currentOn(void){
     Serial.println("CurrentSoruce ON");
     return true;
+
+    // FOR TEST
     // return false;
+    // long rand = random(100);
+    // if (rand > 30){
+    //     Serial.println("-Normal");
+    //     return true;
+    // }else {
+    //     Serial.println("-Fail");
+    //     return false;
+    // }
 }
 
 /*!
@@ -316,68 +350,32 @@ void Measurement::setCurrent(uint16_t current){
  */
 bool Measurement::getCurrentSourceStatus(void){
     Serial.print("C-C ");
+    return true;
+    // // FOR TESST
     // return false;
-    return true;
+    // long rand = random(100);
+    // if (rand > 20){
+    //     return true;
+    // }else {
+    //     return false;
+    // }
 }
 
-/// @brief 一回計測
-/// @param void 
-/// @return bool true:エラーなしで計測完了  false:エラー発生
-/// @note エラー時は電流をoffにしてsensor_errorをtrueにして帰る 
-bool Measurement::measSingle(void){
-    Serial.print("Meas:: single meas.. ");
-    uint16_t reading = 0;
-    if (currentOn()){
-        for (size_t i = 0; i < 3; i++){
-            delay(sensor_heat_propagation_time/3);
-            if (getCurrentSourceStatus()){
-                sensor_error = false;
-                reading = read_level();
-            } else {
-                Serial.println("SNGL terminate by error.");
-                sensor_error = true;
-                currentOff();
-                break;
-            }
-        }
-        if (getCurrentSourceStatus()){
-            sensor_error = false;
-            reading = read_level();
-        }
-        currentOff();
-        Serial.println("::Meas END.");
-    } else {
-        currentOff();
-        return false;
-    };
-
-    return true;
-}
-
-/// @brief 連続計測を開始するための準備（CLK非同期処理）
-/// @param void 
-/// @return bool true:正常に開始できた false:開始できなかった 
-bool Measurement::contSTART(void){
-    bool status = currentOn();
-    if (status){
-        cont_measurement = true;
-    }
-    return status;
-}
-
-/// @brief 連続計測を終了させるための準備（CLK非同期処理）
-/// @param void 
-/// @return 常にtrue:正常終了 
-bool Measurement::contEND(void){
-    cont_measurement = false;
+/*!
+ * @brief 測定を終了する
+ */
+void Measurement::terminateMeasurement(void){
     currentOff();
-    return true;
+    present_mode = EModes::TIMER;
+    busy_now = false;
+    return;
 }
 
 /// @brief 液面計速を実行
 /// @param void 
 /// @return uint16_t 液面 [0.1%] 
 uint16_t Measurement::read_level(void){
+    delay(150);// 計測に必要な時間のダミー
     Serial.print("RL ");
     return 1234;
 }
