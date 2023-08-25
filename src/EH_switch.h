@@ -27,6 +27,15 @@
 
 class EH_switch {
     public:
+        /*!
+        * @brief スイッチの押下状況の一覧
+        */
+        enum class E_Operation : uint8_t{
+            CLICK = 0,
+            LONGPRESS,
+            DOUBLECLICK,
+            UNKNOWN
+        };
 
         /*!
          * @brief constructor   ポート番号を指定
@@ -122,6 +131,19 @@ class EH_switch {
         /// @note isReleased()=Trueの場合に意味がある値を取ります
         bool isLongPressing(void){
             return long_press;
+        }
+
+        /// @brief 検出したスイッチの操作の種別を返します
+        /// @return E_Operation型
+        /// @note isReleased()=Trueの場合に意味がある値を取ります
+        E_Operation detected(void){
+            if (clicked){
+                return E_Operation::CLICK;
+            }
+            if (long_press){
+                return E_Operation::LONGPRESS;
+            }
+            return E_Operation::UNKNOWN;
         }
 
         /*!
