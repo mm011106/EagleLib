@@ -121,6 +121,9 @@ class Measurement {
     private:
     // consts
 
+    // debug flag
+    constexpr static bool DEBUG = true;
+
     // instances
     // デバイスのインスタンスへのポインタ 
     //  電流設定用DAコンバータ

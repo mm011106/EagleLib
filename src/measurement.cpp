@@ -22,10 +22,10 @@ void Measurement::init(void){
         single_meas_interval = single_meas_period/3;//[CLK count]   
     }
 
-    Serial.println(sensor_heat_propagation_time);
-    Serial.print("Sensor Length:"); Serial.println(p_parameter->sensor_length);
-    Serial.print("Delay Time:"); Serial.println(sensor_heat_propagation_time);
-    Serial.print("Sensor R:"); Serial.println(sensor_resistance);
+    if(DEBUG){Serial.println(sensor_heat_propagation_time);}
+    if(DEBUG){Serial.print("Sensor Length:"); Serial.println(p_parameter->sensor_length);}
+    if(DEBUG){Serial.print("Delay Time:"); Serial.println(sensor_heat_propagation_time);}
+    if(DEBUG){Serial.print("Sensor R:"); Serial.println(sensor_resistance);}
     // デバイスの校正値を設定
     // デバイスの校正値はFramから読み込まれてp_parameterに入っているのでそこを直接読む
     
@@ -83,7 +83,7 @@ void Measurement::clk_in(void){
             if ( (single_meas_counter % single_meas_interval) == 0){
                 single_last_meas = false;
                 should_measure = true;
-                Serial.print("preMeas ");
+                if(DEBUG){Serial.print("preMeas ");}
             }
         }else{
             // 最終の計測：ここでの計測が測定値として保持される
@@ -96,7 +96,7 @@ void Measurement::clk_in(void){
                 single_last_meas = true;
                 should_measure = true;
                 // exec_single_measurement = false;
-                Serial.print("lastMeas ");
+                if(DEBUG){Serial.print("lastMeas ");}
             }
         };
     };
@@ -135,16 +135,16 @@ void Measurement::setCommand(Measurement::ECommand command){
             present_mode = EModes::MANUAL;
             busy_now = true;
             if (currentOn()){
-                Serial.print("SINGLE Start. ");Serial.println(micros());
+                if(DEBUG){Serial.print("SINGLE Start. ");Serial.println(micros());}
                 single_meas_counter = 0;
                 sensor_error = false;
             }else{
-                Serial.println("SINGLE Meas ERROR. terminate");
+                if(DEBUG){Serial.println("SINGLE Meas ERROR. terminate");}
                 sensor_error = true;
                 terminateMeasurement();
             }
         } else {
-            Serial.println("Fail: measure command while busy.");
+            if(DEBUG){Serial.println("Fail: measure command while busy.");}
         }
         break;
 
@@ -153,15 +153,15 @@ void Measurement::setCommand(Measurement::ECommand command){
             present_mode = EModes::CONTINUOUS;
             busy_now = true;
             if (currentOn()){
-                Serial.println("CONT Start.");
+                if(DEBUG){Serial.println("CONT Start.");}
                 sensor_error = false;
             } else {
-                Serial.println("CONT Meas ERROR. terminate");
+                if(DEBUG){Serial.println("CONT Meas ERROR. terminate");}
                 sensor_error = true;
                 terminateMeasurement();
             }
         } else {
-            Serial.println("Fail: measure command while busy.");
+            if(DEBUG){Serial.println("Fail: measure command while busy.");}
         }
         break;
     
@@ -169,28 +169,28 @@ void Measurement::setCommand(Measurement::ECommand command){
         if(busy_now){
             terminateMeasurement();
         } else {
-            Serial.println("Fail: CONT END command while ready.");
+            if(DEBUG){Serial.println("Fail: CONT END command while ready.");}
         }
         break;
 
     case Measurement::ECommand::TERMINATE :
         if(busy_now){
-            Serial.println("TERMINATE.");
+            if(DEBUG){Serial.println("TERMINATE.");}
             terminateMeasurement();
         } else {
-            Serial.println("Fail: TERMINATE command while ready.");
+            if(DEBUG){Serial.println("Fail: TERMINATE command while ready.");}
         }
 
         break;
 
     case Measurement::ECommand::IDLE :
-        Serial.print("busy:");Serial.print(busy_now);Serial.print(" - error:");Serial.print(sensor_error);
+        if(DEBUG){Serial.print("busy:");Serial.print(busy_now);Serial.print(" - error:");Serial.print(sensor_error);}
         // Serial.print(" - cont:");Serial.println(exec_cont_measurement);
-        Serial.println("Measurement status did not change.");
+        if(DEBUG){Serial.println("Measurement status did not change.");}
         break;
 
     default:
-        Serial.println("ERROR: NO COMMAND");
+        if(DEBUG){Serial.println("ERROR: NO COMMAND");}
         break;
     }
 }
@@ -208,7 +208,7 @@ void Measurement::executeMeasurement(void){
     bool the_last_meas = single_last_meas;
 
     // for debug
-    Serial.print("execMeas::start "); Serial.print(micros());Serial.print(" ");
+    if(DEBUG){Serial.print("execMeas::start "); Serial.print(micros());Serial.print(" ");}
 
     uint16_t result = 0;
     if (getCurrentSourceStatus()){
@@ -220,9 +220,9 @@ void Measurement::executeMeasurement(void){
 
     // Sensorエラー処理（異常終了）
     if (sensor_error){
-        Serial.print("-sensorError  - ");
+        if(DEBUG){Serial.print("-sensorError  - ");}
         //センサエラー（測定中にエラー発生）なら計測を終了して帰る
-        Serial.println("Measurement Treminate by error.");
+        if(DEBUG){Serial.println("Measurement Treminate by error.");}
         terminateMeasurement();
         
         // Vmonにエラーを出力
@@ -232,7 +232,7 @@ void Measurement::executeMeasurement(void){
 
     // 一回計測の最終計測の場合は一回計測のクロージング処理
     if (the_last_meas){
-        Serial.print("-single:last- ");
+        if(DEBUG){Serial.print("-single:last- ");}
         single_last_meas = false;
         single_meas_counter = 0;
         should_measure = false;//最終計測なので、計測中に入った測定要求は無視する
@@ -246,14 +246,14 @@ void Measurement::executeMeasurement(void){
     // フラグを出力(フラグ、getter必要)
     // 結果を出力（getter必要）
 
-    Serial.println("execMeas::End ");
+    if(DEBUG){Serial.println("execMeas::End ");}
 }
 
 /*!
  * @brief 電流源をonにする
  */
 bool Measurement::currentOn(void){
-    Serial.println("CurrentSoruce ON");
+    if(DEBUG){Serial.println("CurrentSoruce ON");}
     return true;
 
     // FOR TEST
@@ -272,7 +272,7 @@ bool Measurement::currentOn(void){
  * @brief 電流源をoffにする
  */
 void Measurement::currentOff(void){
-    Serial.println("CurrentSoruce OFF");
+    if(DEBUG){Serial.println("CurrentSoruce OFF");}
     return ;
 }
 
@@ -281,7 +281,7 @@ void Measurement::currentOff(void){
  * @param current 設定電流値[0.1mA]
  */
 void Measurement::setCurrent(uint16_t current){
-    Serial.print("CurrentSoruce set");Serial.println(current);
+    if(DEBUG){Serial.print("CurrentSoruce set");Serial.println(current);}
     return;
 }
 
@@ -290,7 +290,7 @@ void Measurement::setCurrent(uint16_t current){
  * @returns True: 電流Onの設定で正常に電流を供給している, False:電流がoff もしくは 負荷異常
  */
 bool Measurement::getCurrentSourceStatus(void){
-    Serial.print("C-C ");
+    if(DEBUG){Serial.print("C-C ");}
     return true;
     // // FOR TESST
     // return false;
@@ -318,19 +318,19 @@ void Measurement::terminateMeasurement(void){
 /// @return uint16_t 液面 [0.1%] 
 uint16_t Measurement::read_level(void){
     delay(150);// 計測に必要な時間のダミー
-    Serial.print("RL ");
+    if(DEBUG){Serial.print("RL ");}
     return 1234;
 }
 
 /// @brief 電圧モニタ出力を設定する 
 /// @param vout 出力電圧[0.1V] 
 void Measurement::setVmon(uint16_t vout){
-    Serial.print("Vout: set");Serial.println(vout);
+    if(DEBUG){Serial.print("Vout: set");Serial.println(vout);}
     return;
 }
 
 /// @brief  電圧モニタ出力にエラーを提示する（0V) 
 /// @param  void
 void Measurement::setVmonFailed(void){
-    Serial.println("Vout: Error indicate.");    
+    if(DEBUG){Serial.println("Vout: Error indicate.");}    
 }
