@@ -1,14 +1,6 @@
 #include "statemachine.h"
 
 
-/// @brief ステートマシンの状態に応じた文字を返します（表示用）
-/// @param  void
-/// @return ModeIndで定義した文字の中の1文字が状態に応じて返されます
-char Statemachine::getStatusChar(void){
-    return ModeInd[static_cast<uint8_t>(machine_status)];
-}
-
-
 /*!
     * @brief 状態遷移のためのトリガ信号を与えます
     * @param  Statemachine::ETransit型   状態遷移のための信号名
@@ -24,59 +16,65 @@ bool Statemachine::setTransitSignal(ETransit signal){
   bool update = true;  
 
   switch (signal) {
+    //  スイッチのクリック
     case ETransit::CLICK :
       Serial.print("CLICK)");
       if(machine_status == EStatus::TIMER){
         machine_status = EStatus::MANUAL;
-        command = EMeasCommand::SINGLE;
+        command = EMeasCommand::START;
       }
       // else if(machine_status == EStatus::MANUAL){
       //   machine_status = EStatus::TIMER;
       // }
       else if(machine_status == EStatus::CONT){
         machine_status = EStatus::TIMER;
-        command = EMeasCommand::CONTEND;
+        command = EMeasCommand::STOP;
       } else {
         update = false;
         command = EMeasCommand::IDLE;
         }
     break;
 
+    //  スイッチの長押し
     case ETransit::LONG :
       Serial.print("LONG)");
       if (machine_status == EStatus::TIMER){
         machine_status = EStatus::CONT;
-        command = EMeasCommand::CONTSTART;
+        command = EMeasCommand::START;
       } else if (machine_status == EStatus::CONT){
         machine_status = EStatus::TIMER;
-        command = EMeasCommand::CONTEND;
+        command = EMeasCommand::STOP;
       } else {
         update = false;
         command = EMeasCommand::IDLE;
         }   
     break;
-      
+    
+    //  タイマのタイムアップ
     case ETransit::TIMEUP :
       Serial.print("TIMEUP)");
       if(machine_status == EStatus::TIMER){
         machine_status = EStatus::MANUAL;
-        command = EMeasCommand::SINGLE;
-      } else {
-        update = false;
-        command = EMeasCommand::IDLE;
-        }   
-    break;
-      
-    case ETransit::MEASCPL :
-      Serial.print("MEAS end)");
-      if(machine_status == EStatus::MANUAL){
-        machine_status = EStatus::TIMER;
+        command = EMeasCommand::START;
       } else {
         update = false;
         command = EMeasCommand::IDLE;
         }   
     break;
 
+    //  測定完了（一回計測で計測が完了した場合に発生する信号）
+    case ETransit::MEASCPL :
+      Serial.print("MEAS end)");
+      if(machine_status == EStatus::MANUAL){
+        machine_status = EStatus::TIMER;
+        command = EMeasCommand::STOP;
+      } else {
+        update = false;
+        command = EMeasCommand::IDLE;
+        }   
+    break;
+
+    //  現状維持    （通常は使わない）
     case ETransit::IDLE :
       Serial.print("IDLE)");
       update = false;
@@ -98,9 +96,36 @@ bool Statemachine::setTransitSignal(ETransit signal){
   return (updated);
 }
 
+/*!
+    * @brief 状態遷移が行われたかどうかを返します
+    * @return true: statusが更新された false: 更新なし
+    * @note 読み取るたびに値はクリアされます
+    */
+bool Statemachine::hasStatusUpdated(void){
+    bool temp_flag = updated;
+    updated = false;
+    return temp_flag;
+};
+
 /// @brief 状態遷移に応じた計測部への指示を返します
 /// @return EMeasCommand型 測定命令
-/// @note isChanged()==true 時に有効になります
+/// @note hasStatusUpdated()==true 時に有効になります
 Statemachine::EMeasCommand Statemachine::getMeasCommand(void){
     return command;
+}
+
+/*!
+    * @brief マシンの内部状態を返します
+    * @param  
+    * @return EStatus型 
+    */
+Statemachine::EStatus Statemachine::getStatus(void){
+    return machine_status;
+};
+
+/// @brief ステートマシンの状態に応じた文字を返します（表示用）
+/// @param  void
+/// @return ModeIndで定義した文字の中の1文字が状態に応じて返されます
+char Statemachine::getStatusChar(void){
+    return ModeInd[static_cast<uint8_t>(machine_status)];
 }
