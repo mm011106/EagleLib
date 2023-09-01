@@ -33,7 +33,7 @@ class Statemachine {
             CLICK,  //  操作スイッチ  クリック
             LONG,   //  操作スイッチ  長押し
             TIMEUP, //  タイマ計測
-            MEASCPL //  測定完了
+            MEASCPL //  測定完了（一回計測で計測が完了した場合に発生する信号）
         };
 
         // @brief ステートマシン状態一覧

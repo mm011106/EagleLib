@@ -16,6 +16,7 @@ bool Statemachine::setTransitSignal(ETransit signal){
   bool update = true;  
 
   switch (signal) {
+    //  スイッチのクリック
     case ETransit::CLICK :
       Serial.print("CLICK)");
       if(machine_status == EStatus::TIMER){
@@ -34,6 +35,7 @@ bool Statemachine::setTransitSignal(ETransit signal){
         }
     break;
 
+    //  スイッチの長押し
     case ETransit::LONG :
       Serial.print("LONG)");
       if (machine_status == EStatus::TIMER){
@@ -47,7 +49,8 @@ bool Statemachine::setTransitSignal(ETransit signal){
         command = EMeasCommand::IDLE;
         }   
     break;
-      
+    
+    //  タイマのタイムアップ
     case ETransit::TIMEUP :
       Serial.print("TIMEUP)");
       if(machine_status == EStatus::TIMER){
@@ -58,7 +61,8 @@ bool Statemachine::setTransitSignal(ETransit signal){
         command = EMeasCommand::IDLE;
         }   
     break;
-      
+
+    //  測定完了（一回計測で計測が完了した場合に発生する信号）
     case ETransit::MEASCPL :
       Serial.print("MEAS end)");
       if(machine_status == EStatus::MANUAL){
@@ -70,6 +74,7 @@ bool Statemachine::setTransitSignal(ETransit signal){
         }   
     break;
 
+    //  現状維持    （通常は使わない）
     case ETransit::IDLE :
       Serial.print("IDLE)");
       update = false;
