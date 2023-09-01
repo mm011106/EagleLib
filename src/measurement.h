@@ -14,6 +14,8 @@
 #ifndef _MEASUREMENT_H_
 #define _MEASUREMENT_H_
 
+#include <Arduino.h>
+
 // デバイスのドライバ
 #include <Adafruit_ADS1015.h>   // ADC 16bit diff - 2ch
 #include <Adafruit_MCP23008.h>  // PIO 8bit
@@ -32,7 +34,8 @@ class Measurement {
         IDLE = 0,
         SINGLE,
         CONTSTART,
-        CONTEND
+        CONTEND,
+        TERMINATE
     };
 
     /*!
@@ -95,6 +98,12 @@ class Measurement {
 
     void setCommand(Measurement::ECommand command);
 
+    // 実際の測定を実行
+    void executeMeasurement(void);
+    bool shouldMeasure(void){
+        return should_measure;
+    }
+
     EModes getMode(void){
         return present_mode;
     };
@@ -111,6 +120,9 @@ class Measurement {
 
     private:
     // consts
+
+    // debug flag
+    constexpr static bool DEBUG = true;
 
     // instances
     // デバイスのインスタンスへのポインタ 
@@ -136,29 +148,23 @@ class Measurement {
     // リソースが命令実行中
     bool busy_now = false;
 
+    //  外部への測定指示フラグ
+    bool should_measure = false; 
+
     // 連続計測動作
-    bool cont_measurement = false;
     uint16_t cont_meas_inteval_counter = 0;
 
      // 一回計測動作
-    bool single_measurement = false;
     uint16_t single_meas_counter = 0;
     uint16_t single_meas_interval = 0;
     uint16_t single_meas_period = 0;
-
-
-    // 表示停止依頼
-    bool inhibit_lcd_refresh = false;
+    bool single_last_meas = false;
 
     //  現在の動作モードを保持
     EModes present_mode = EModes::TIMER;
 
     // methods 
-    // 高機能計測
-    //  液面を計測（シングル）
-    bool measSingle(void);
-    bool contSTART(void);
-    bool contEND(void);
+    void terminateMeasurement(void);
 
     //  電圧・電流値の読み取り
     uint32_t read_voltage(void);
