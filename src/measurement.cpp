@@ -249,6 +249,12 @@ void Measurement::executeMeasurement(void){
     if(DEBUG){Serial.println("execMeas::End ");}
 }
 
+/// @brief I2Cバスの明け渡し要求
+/// @return true:明け渡しが必要 false:不要
+bool Measurement::shouldVacateI2Cbus(void){
+    return occupy_the_bus;
+}
+
 /*!
  * @brief 電流源をonにする
  */
@@ -313,12 +319,34 @@ void Measurement::terminateMeasurement(void){
     return;
 }
 
+
+
+uint32_t Measurement::read_voltage(void){
+    occupy_the_bus = true;
+    delay(100);// 計測に必要な時間のダミー
+    if(DEBUG){Serial.print("RVol ");}
+    occupy_the_bus = false;
+    return 2222;
+}
+
+uint32_t Measurement::read_current(void){
+    occupy_the_bus = true;
+    delay(100);// 計測に必要な時間のダミー
+    if(DEBUG){Serial.print("RCur ");}
+    occupy_the_bus = false;
+    return 5555;
+}
+
+
 /// @brief 液面計速を実行
 /// @param void 
 /// @return uint16_t 液面 [0.1%] 
 uint16_t Measurement::read_level(void){
-    delay(150);// 計測に必要な時間のダミー
-    if(DEBUG){Serial.print("RL ");}
+    occupy_the_bus = true;
+    uint32_t voltage = read_voltage();
+    uint32_t current = read_current();
+    // レベルの計算・補正
+    occupy_the_bus = false;
     return 1234;
 }
 
