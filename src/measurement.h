@@ -104,6 +104,8 @@ class Measurement {
         return should_measure;
     }
 
+    bool shouldVacateI2Cbus(void);
+
     EModes getMode(void){
         return present_mode;
     };
@@ -149,7 +151,10 @@ class Measurement {
     bool busy_now = false;
 
     //  外部への測定指示フラグ
-    bool should_measure = false; 
+    bool should_measure = false;
+
+    // I2Cバス占有したいフラグ
+    bool occupy_the_bus = false;
 
     // 連続計測動作
     uint16_t cont_meas_inteval_counter = 0;
