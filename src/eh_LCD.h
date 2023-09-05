@@ -93,7 +93,10 @@ class EhLcd : public rgb_lcd {
 
     // 機能としてのclass関数の定義 
     
-        bool init(uint8_t error);
+        bool init(void);
+
+        void splash(const char *message);
+        void showHardwareError(uint8_t error_code);
 
         // 表示処理を有効:true/無効:falseにする
         void startDisplay(const bool start){
@@ -115,6 +118,7 @@ class EhLcd : public rgb_lcd {
         };
 
         // 表示内容を数値で指定するセッター
+        
         bool setLevel(const uint16_t value);
         bool setBargraph(const uint16_t value);
         void setSensorlength(const uint8_t value);
@@ -128,6 +132,8 @@ class EhLcd : public rgb_lcd {
 
         // 固定表示部分の描画   非同期描画
         void writeFrame(void);
+
+        void setVacateI2Cbus(bool flag);
 
         uint8_t itemName2Int(EDisplayItemName itemname){
             return static_cast<uint8_t>(itemname);
@@ -229,6 +235,9 @@ class EhLcd : public rgb_lcd {
         // 表示処理にクロックをつなぐ＝CLKを有効にする
         bool enable_CLK = false;
 
+        // I2Cバスを解放する
+        bool vacateI2Cbus = false;
+        
         /*!
          * @brief リソースをリリースした後も
          *        設定された時間だけビジーステートを有効にするための
@@ -322,7 +331,7 @@ class EhLcd : public rgb_lcd {
                 .x_location = 4, .y_location = 0,
                 .text = "/"
             },
-            // 2: レベル    バー表示
+            // 2: レベル    バー表示のフレーム
             {   .mode = false,
                 .state = true,
                 .count = DAFAULT_COLON_BLINK_PERIOD,

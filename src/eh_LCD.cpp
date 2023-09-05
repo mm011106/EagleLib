@@ -6,7 +6,7 @@
 @param error エラーコード（エラー表示のため）
 @return True:正常終了   False:パラメタ参照用のeh900型変数が未定義
 */
-bool EhLcd::init(uint8_t error){
+bool EhLcd::init(void){
 
     rgb_lcd::begin(16,2);
     delay(10);  // delayを入れないとうまく通信できない時がある
@@ -17,18 +17,7 @@ bool EhLcd::init(uint8_t error){
         rgb_lcd::createChar(i+1, bar_graph[i]);
     }
 
-    rgb_lcd::clear();
-    delay(10);
 
-    // スプラッシュ表示
-    rgb_lcd::setCursor(2, 0);
-    rgb_lcd::print("-- EH-900 --");
-    rgb_lcd::setCursor(1, 1);
-//     rgb_lcd::print(REV);
-
-    delay(1000);
-    rgb_lcd::clear();
-    delay(10);
 
     // ハードウエアエラー表示のコードを書く（エラーコードを引数にいれる）
 
@@ -40,6 +29,39 @@ bool EhLcd::init(uint8_t error){
 
     return true;
 };
+
+/// @brief 起動時のメッセージ（型式等）を表示します。
+/// @param message char配列のポインタ(16文字まで)
+void EhLcd::splash(const char *message){
+    rgb_lcd::clear();
+    delay(10);
+
+    rgb_lcd::setCursor(2, 0);
+    rgb_lcd::print("-- EH-900 --");
+    rgb_lcd::setCursor(0, 1);
+    rgb_lcd::print(message);
+    delay(2000);
+
+    rgb_lcd::clear();
+    delay(300);
+    return;
+}
+
+
+/// @brief 起動時のハードウエアチェックのエラー表示
+/// @param error_code この数値をそのまま表示します
+void EhLcd::showHardwareError(uint8_t error_code){
+    rgb_lcd::clear();
+    delay(10);
+
+    rgb_lcd::setCursor(0, 0);
+    rgb_lcd::print("HARDWARE ERROR!");
+    rgb_lcd::setCursor(3, 1);
+    rgb_lcd::print("#");
+    rgb_lcd::print(error_code);
+
+    return;
+}
 
 /*!
  * @brief CLKに同期した処理を実行 
@@ -55,8 +77,9 @@ void EhLcd::clk_in(void){
 
     // 処理時間測定用   フレーム同期信号
     if(now_thread==0){
-//         digitalWrite(port_longPress,HIGH);
-//         digitalWrite(port_longPress,LOW);
+        digitalWrite(PA3,HIGH);
+    } else {
+        digitalWrite(PA3,LOW);
     }
 
     // display_itemに記載のある表示内容を表示
@@ -105,7 +128,8 @@ void EhLcd::clk_in(void){
 /// @param itemの(ItemProperty型) 表示項目の指定
 void EhLcd::writeItem(ItemProperty *item){
 
-    if (item->refresh){  //表示更新の指示がある場合表示を更新
+    //表示更新の指示がある場合表示を更新、I2Cバスを使えない時は更新しない
+    if (item->refresh && !vacateI2Cbus){  
         rgb_lcd::setCursor(item->x_location,item->y_location);
         
         String buffer = "";
@@ -129,6 +153,11 @@ void EhLcd::writeItem(ItemProperty *item){
 /*
 * 非同期で動作する関数の記述
 */
+
+// I2Cバスの解放指示フラグのセット
+void EhLcd::setVacateI2Cbus(bool flag){
+    vacateI2Cbus = flag;
+}
 
 // 表示アイテムの直接操作
 
@@ -157,7 +186,7 @@ void EhLcd::writeItem(ItemProperty *item){
         return true;
     };
 
-    //  LCD表示内容を設定する：液面レベルの設定
+    //  LCD表示内容を設定する：液面レベルの設定（バーグラフ）
     bool EhLcd::setBargraph(const uint16_t value){
         if (value < 0 | value > 1000){  // 引数のオーバーレンジを検出
             return false;
@@ -201,6 +230,7 @@ void EhLcd::writeItem(ItemProperty *item){
         display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].refresh = true;
     };
 
+    // LCD表示内容を設定する：タイマ残り時間
     void EhLcd::setTimerRemain(const uint8_t value){
         String msg = ("  "+String(value));
         msg = msg.substring(msg.length()-2);
@@ -208,6 +238,7 @@ void EhLcd::writeItem(ItemProperty *item){
         display_items[static_cast<uint8_t>(EDisplayItemName::TIME_REMAIN)].refresh = true;
     };
 
+    // LCD表示内容を設定する：計測モード
     void EhLcd::setMeasMode(const EModes meas_mode){
         display_items[static_cast<uint8_t>(EDisplayItemName::MODE)].text = ModeInd[static_cast<uint8_t>(meas_mode)];
         display_items[static_cast<uint8_t>(EDisplayItemName::MODE)].refresh = true;
