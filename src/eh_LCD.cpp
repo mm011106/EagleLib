@@ -20,6 +20,7 @@ bool EhLcd::init(void){
     if (DEBUG){
         Serial.print("- eh_LCD.ino");
         Serial.println(sizeof(display_items));
+        Serial.println(sizeof(frame));
     }
 
     return true;
@@ -185,7 +186,7 @@ void EhLcd::setVisible(const EDisplayItemName item, const bool visible){
 /// @brief 表示テキストの直接書き込み（非推奨）
 /// @param item：表示項目の指定 EDisplayItemNameの要素名で指定
 /// @param text 表示テキスト(String)
-void EhLcd::setText(const EDisplayItemName item, const String text){
+void EhLcd::setText(const EDisplayItemName item, const String& text){
     display_items[static_cast<uint8_t>(item)].text = text;
 };
 

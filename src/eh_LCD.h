@@ -78,7 +78,7 @@ class EhLcd : public rgb_lcd {
 
         void setBlink(const EDisplayItemName item, const bool mode);
         void setVisible(const EDisplayItemName item, const bool visible);
-        void setText(const EDisplayItemName item, const String Value);
+        void setText(const EDisplayItemName item, const String& Value);
 
         // 表示内容を数値で指定するセッター
 
