@@ -128,72 +128,62 @@ void Measurement::clk_in(void){
 /// @brief 計測クラスに計測の命令を与えます
 /// @param ECommand::command  命令 
 void Measurement::setCommand(Measurement::ECommand command){
-    switch (command)
-    {
-    case Measurement::ECommand::SINGLE :
-        if (!busy_now){
-            present_mode = EModes::MANUAL;
-            busy_now = true;
-            if (currentOn()){
-                if(DEBUG){Serial.print("SINGLE Start. ");Serial.println(micros());}
-                single_meas_counter = 0;
-                sensor_error = false;
-            }else{
-                if(DEBUG){Serial.println("SINGLE Meas ERROR. terminate");}
-                sensor_error = true;
-                terminateMeasurement();
-            }
-        } else {
-            if(DEBUG){Serial.println("Fail: measure command while busy.");}
-        }
-        break;
 
-    case Measurement::ECommand::CONTSTART :
-        if(!busy_now){
-            present_mode = EModes::CONTINUOUS;
-            busy_now = true;
-            if (currentOn()){
-                if(DEBUG){Serial.println("CONT Start.");}
-                sensor_error = false;
+    switch (command){
+        case Measurement::ECommand::START :
+            if (!busy_now){
+                busy_now = true;
+                if (currentOn()){
+                    sensor_error = false;
+                    if (present_mode == EModes::MANUAL){//一回計測の準備
+                        if(DEBUG){Serial.print("SINGLE Start. ");Serial.println(micros());}
+                        single_meas_counter = 0;
+                    }
+                    if (present_mode == EModes::CONTINUOUS){// 連続計測の準備
+                        if(DEBUG){Serial.println("CONT Start.");}
+                    }
+                }else{
+                    if(DEBUG){Serial.println("MeasCommand ERROR. terminate");}
+                    sensor_error = true;
+                    terminateMeasurement();
+                }
             } else {
-                if(DEBUG){Serial.println("CONT Meas ERROR. terminate");}
-                sensor_error = true;
-                terminateMeasurement();
+                if(DEBUG){Serial.println("Fail: measure command while busy.");}
             }
-        } else {
-            if(DEBUG){Serial.println("Fail: measure command while busy.");}
-        }
-        break;
-    
-    case Measurement::ECommand::CONTEND :
-        if(busy_now){
-            terminateMeasurement();
-        } else {
-            if(DEBUG){Serial.println("Fail: CONT END command while ready.");}
-        }
-        break;
+            break;
 
-    case Measurement::ECommand::TERMINATE :
-        if(busy_now){
-            if(DEBUG){Serial.println("TERMINATE.");}
-            terminateMeasurement();
-        } else {
-            if(DEBUG){Serial.println("Fail: TERMINATE command while ready.");}
-        }
+        case Measurement::ECommand::STOP :
+            if(busy_now){
+                terminateMeasurement();
+            } else {
+                if(DEBUG){Serial.println("Fail: CONT END command while ready.");}
+            }
+            break;
 
-        break;
 
-    case Measurement::ECommand::IDLE :
-        if(DEBUG){Serial.print("busy:");Serial.print(busy_now);Serial.print(" - error:");Serial.print(sensor_error);}
-        // Serial.print(" - cont:");Serial.println(exec_cont_measurement);
-        if(DEBUG){Serial.println("Measurement status did not change.");}
-        break;
+        case Measurement::ECommand::IDLE :
+            if(DEBUG){Serial.print("busy:");Serial.print(busy_now);Serial.print(" - error:");Serial.print(sensor_error);}
+            // Serial.print(" - cont:");Serial.println(exec_cont_measurement);
+            if(DEBUG){Serial.println("Measurement status did not change.");}
+            break;
 
-    default:
-        if(DEBUG){Serial.println("ERROR: NO COMMAND");}
-        break;
+        default:
+            if(DEBUG){Serial.println("ERROR: NO COMMAND");}
+            break;
     }
 }
+
+/// @brief 計測モードをセットする
+void Measurement::setMode(Measurement::EModes mode){
+    present_mode = mode;
+    return;
+}
+
+/// @brief 現在の計測モードを返す
+/// @return EModes
+Measurement::EModes Measurement::getMode(void){
+    return present_mode;
+};
 
 /*!
  * @brief 実際の計測動作を行う  エラー時は測定を中断する    一回計測の終了判断を行い終了させる
@@ -224,9 +214,6 @@ void Measurement::executeMeasurement(void){
         //センサエラー（測定中にエラー発生）なら計測を終了して帰る
         if(DEBUG){Serial.println("Measurement Treminate by error.");}
         terminateMeasurement();
-        
-        // Vmonにエラーを出力
-        void setVmonFailed(void);
         return;
     }
 
@@ -236,6 +223,7 @@ void Measurement::executeMeasurement(void){
         single_last_meas = false;
         single_meas_counter = 0;
         should_measure = false;//最終計測なので、計測中に入った測定要求は無視する
+        finished_single_meas = true; // 一回計測完了のフラグ
         terminateMeasurement();
     }
 
@@ -254,6 +242,32 @@ void Measurement::executeMeasurement(void){
 bool Measurement::shouldVacateI2Cbus(void){
     return occupy_the_bus;
 }
+
+/// @brief 1回計測が終了したことを読み出す
+/// @return True:終了 False:測定中
+/// @note 一度読み出すとfalseにリセットされます
+bool Measurement::haveFinishedMeasurement(void){
+    bool temp = finished_single_meas;
+    finished_single_meas = false;
+    return temp;
+}
+
+/// @brief 測定が異常終了したことを読み出す
+/// @return True:異常終了 False:正常
+/// @note 一度読み出すとfalseにリセットされます
+bool Measurement::haveFailedMesasurement(void){
+    bool temp = failed_meas;
+    failed_meas = false;
+    return temp;
+}
+
+/// @brief センサエラーの状態を読み出す
+/// @return True:エラー False:正常
+/// @note LCD表示への信号
+bool Measurement::isSensorError(void){
+    return sensor_error;
+}
+
 
 /*!
  * @brief 電流源をonにする
@@ -297,57 +311,15 @@ void Measurement::setCurrent(uint16_t current){
  */
 bool Measurement::getCurrentSourceStatus(void){
     if(DEBUG){Serial.print("C-C ");}
-    return true;
-    // // FOR TESST
-    // return false;
+    // return true;
+
+    // FOR TESST
     // long rand = random(100);
     // if (rand > 20){
     //     return true;
     // }else {
     //     return false;
     // }
-}
-
-/*!
- * @brief 測定を終了する
- */
-void Measurement::terminateMeasurement(void){
-    should_measure = false;
-    currentOff();
-    present_mode = EModes::TIMER;
-    busy_now = false;
-    return;
-}
-
-
-
-uint32_t Measurement::read_voltage(void){
-    occupy_the_bus = true;
-    delay(100);// 計測に必要な時間のダミー
-    if(DEBUG){Serial.print("RVol ");}
-    occupy_the_bus = false;
-    return 2222;
-}
-
-uint32_t Measurement::read_current(void){
-    occupy_the_bus = true;
-    delay(100);// 計測に必要な時間のダミー
-    if(DEBUG){Serial.print("RCur ");}
-    occupy_the_bus = false;
-    return 5555;
-}
-
-
-/// @brief 液面計速を実行
-/// @param void 
-/// @return uint16_t 液面 [0.1%] 
-uint16_t Measurement::read_level(void){
-    occupy_the_bus = true;
-    uint32_t voltage = read_voltage();
-    uint32_t current = read_current();
-    // レベルの計算・補正
-    occupy_the_bus = false;
-    return 1234;
 }
 
 /// @brief 電圧モニタ出力を設定する 
@@ -362,3 +334,60 @@ void Measurement::setVmon(uint16_t vout){
 void Measurement::setVmonFailed(void){
     if(DEBUG){Serial.println("Vout: Error indicate.");}    
 }
+
+// 
+// Private methods
+// 
+
+//
+// @brief 測定を終了する
+//
+void Measurement::terminateMeasurement(void){
+    should_measure = false;
+    currentOff();
+    // present_mode = EModes::TIMER;
+    busy_now = false;
+    if (sensor_error){      // センサーエラーでターミネートされたら異常終了
+
+        single_last_meas = false;   //１回計測用のフラグをクリア
+        single_meas_counter = 0;
+        finished_single_meas = false; 
+
+        failed_meas = true; // エラー通知
+        setVmonFailed();
+    }
+    return;
+}
+
+/// @brief 電圧を読み取る
+/// @return 電圧値[/uV]
+uint32_t Measurement::read_voltage(void){
+    occupy_the_bus = true;
+    delay(100);// 計測に必要な時間のダミー
+    if(DEBUG){Serial.print("RVol ");}
+    occupy_the_bus = false;
+    return 2222;
+}
+
+/// @brief 電流を読み取る
+/// @return 電流値[/uA]
+uint32_t Measurement::read_current(void){
+    occupy_the_bus = true;
+    delay(100);// 計測に必要な時間のダミー
+    if(DEBUG){Serial.print("RCur ");}
+    occupy_the_bus = false;
+    return 5555;
+}
+
+/// @brief 液面計測を実行
+/// @param void 
+/// @return uint16_t 液面 [0.1%] 
+uint16_t Measurement::read_level(void){
+    occupy_the_bus = true;
+    uint32_t voltage = read_voltage();
+    uint32_t current = read_current();
+    // レベルの計算・補正
+    occupy_the_bus = false;
+    return 1234;
+}
+
