@@ -3,7 +3,7 @@
  * @file 
  * @brief 
  * @author 
- * @date 
+ * @date 20230908
  * $Version:    0.0$
  * @par 
  *    
@@ -32,10 +32,12 @@ class Measurement {
     */
     enum class ECommand : uint8_t{
         IDLE = 0,
-        SINGLE,
-        CONTSTART,
-        CONTEND,
-        TERMINATE
+        START,
+        STOP
+        // SINGLE,
+        // CONTSTART,
+        // CONTEND,
+        // TERMINATE
     };
 
     /*!
@@ -96,7 +98,10 @@ class Measurement {
         return !busy_now;
     };
 
+    // ユニットの設定
     void setCommand(Measurement::ECommand command);
+    void setMode(Measurement::EModes mode);
+    EModes getMode(void);
 
     // 実際の測定を実行
     void executeMeasurement(void);
@@ -104,11 +109,12 @@ class Measurement {
         return should_measure;
     }
 
+    //  外部への通知
     bool shouldVacateI2Cbus(void);
+    bool haveFinishedMeasurement(void); //正常測定完了信号      statemachine用    モーメンタリ
+    bool haveFailedMesasurement(void);  //測定開始エラー信号    statemachine用    モーメンタリ
+    bool isSensorError(void); //LCD表示用  オルタネート
 
-    EModes getMode(void){
-        return present_mode;
-    };
 
     //  電流源制御
     bool currentOn(void);
@@ -152,6 +158,12 @@ class Measurement {
 
     //  外部への測定指示フラグ
     bool should_measure = false;
+
+    // 一回計測終了のフラグ
+    bool finished_single_meas = false;
+
+    // 測定開始失敗のフラグ
+    bool failed_meas = false;
 
     // I2Cバス占有したいフラグ
     bool occupy_the_bus = false;
