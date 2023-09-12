@@ -156,7 +156,7 @@ void Measurement::setCommand(Measurement::ECommand command){
             if(busy_now){
                 terminateMeasurement();
             } else {
-                if(DEBUG){Serial.println("Fail: CONT END command while ready.");}
+                if(DEBUG){Serial.println("Fail: STOP command while ready.");}
             }
             break;
 
