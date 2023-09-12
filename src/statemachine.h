@@ -33,7 +33,8 @@ class Statemachine {
             CLICK,  //  操作スイッチ  クリック
             LONG,   //  操作スイッチ  長押し
             TIMEUP, //  タイマ計測
-            MEASCPL //  測定完了（一回計測で計測が完了した場合に発生する信号）
+            MEASCPL, //  計測ユニットからの測定完了信号（一回計測で計測が完了）
+            MEASERR //  計測ユニットからの計測エラー信号
         };
 
         // @brief ステートマシン状態一覧
@@ -75,6 +76,9 @@ class Statemachine {
         char getStatusChar(void);
 
     private:
+        // debug flag
+        constexpr static bool DEBUG = false;
+
         // Vars
         EStatus machine_status = EStatus::TIMER;
         EStatus previous_machine_status = EStatus::TIMER;

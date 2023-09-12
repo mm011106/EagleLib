@@ -10,7 +10,7 @@
 bool Statemachine::setTransitSignal(ETransit signal){
 
   // for test
-  Serial.print("(Signal:");
+  if(DEBUG){Serial.print("(Signal:");}
   // 
   previous_machine_status = machine_status;
   bool update = true;  
@@ -18,89 +18,99 @@ bool Statemachine::setTransitSignal(ETransit signal){
   switch (signal) {
     //  スイッチのクリック
     case ETransit::CLICK :
-      Serial.print("CLICK)");
-      if(machine_status == EStatus::TIMER){
-        machine_status = EStatus::MANUAL;
-        command = EMeasCommand::START;
-      }
-      // else if(machine_status == EStatus::MANUAL){
-      //   machine_status = EStatus::TIMER;
-      // }
-      else if(machine_status == EStatus::CONT){
-        machine_status = EStatus::TIMER;
-        command = EMeasCommand::STOP;
-      } else {
-        update = false;
-        command = EMeasCommand::IDLE;
+        if(DEBUG){Serial.print("CLICK)");}
+        if(machine_status == EStatus::TIMER){
+            machine_status = EStatus::MANUAL;
+            command = EMeasCommand::START;
         }
-    break;
+        // else if(machine_status == EStatus::MANUAL){
+        //   machine_status = EStatus::TIMER;
+        // }
+        else if(machine_status == EStatus::CONT){
+            machine_status = EStatus::TIMER;
+            command = EMeasCommand::STOP;
+        } else {
+            update = false;
+            command = EMeasCommand::IDLE;
+        }
+        break;
 
     //  スイッチの長押し
     case ETransit::LONG :
-      Serial.print("LONG)");
-      if (machine_status == EStatus::TIMER){
-        machine_status = EStatus::CONT;
-        command = EMeasCommand::START;
-      } else if (machine_status == EStatus::CONT){
-        machine_status = EStatus::TIMER;
-        command = EMeasCommand::STOP;
-      } else {
-        update = false;
-        command = EMeasCommand::IDLE;
+        if(DEBUG){Serial.print("LONG)");}
+        if (machine_status == EStatus::TIMER){
+            machine_status = EStatus::CONT;
+            command = EMeasCommand::START;
+        } else if (machine_status == EStatus::CONT){
+            machine_status = EStatus::TIMER;
+            command = EMeasCommand::STOP;
+        } else {
+            update = false;
+            command = EMeasCommand::IDLE;
         }   
-    break;
-    
+        break;
+
     //  タイマのタイムアップ
     case ETransit::TIMEUP :
-      Serial.print("TIMEUP)");
-      if(machine_status == EStatus::TIMER){
-        machine_status = EStatus::MANUAL;
-        command = EMeasCommand::START;
-      } else {
-        update = false;
-        command = EMeasCommand::IDLE;
+        if(DEBUG){Serial.print("TIMEUP)");}
+        if(machine_status == EStatus::TIMER){
+            machine_status = EStatus::MANUAL;
+            command = EMeasCommand::START;
+        } else {
+            update = false;
+            command = EMeasCommand::IDLE;
         }   
-    break;
+        break;
 
     //  測定完了（一回計測で計測が完了した場合に発生する信号）
     case ETransit::MEASCPL :
-      Serial.print("MEAS end)");
-      if(machine_status == EStatus::MANUAL){
+        if(DEBUG){Serial.print("MEAS end)");}
+        if(machine_status == EStatus::MANUAL){
+            machine_status = EStatus::TIMER;
+            command = EMeasCommand::STOP;
+        } else {
+            update = false;
+            command = EMeasCommand::IDLE;
+        }   
+        break;
+
+    //  測定エラー  計測が開始できなかった場合に発生
+    case ETransit::MEASERR :
+        if(DEBUG){Serial.print("MEAS ERR!)");}
         machine_status = EStatus::TIMER;
         command = EMeasCommand::STOP;
-      } else {
-        update = false;
-        command = EMeasCommand::IDLE;
-        }   
-    break;
+        break;
 
     //  現状維持    （通常は使わない）
     case ETransit::IDLE :
-      Serial.print("IDLE)");
-      update = false;
-      command = EMeasCommand::IDLE;
+        if(DEBUG){Serial.print("IDLE)");}
+        update = false;
+        command = EMeasCommand::IDLE;
     break;
 
     default:
-      update = false;
-      command = EMeasCommand::IDLE;
+        update = false;
+        command = EMeasCommand::IDLE;
     break;
-  }
+    }
   
-  // for test
-  // Serial.println(static_cast<uint8_t>(machine_status));
-  // 
+    updated = (previous_machine_status != machine_status);
+    
+    if(DEBUG && updated){
+        Serial.print(" --Update to: ");
+        Serial.print(getStatusChar());
+        Serial.print(". COMMAND=");
+        Serial.println(static_cast<uint8_t>(getMeasCommand()));
+    }
 
-  Statemachine::updated = (previous_machine_status != machine_status);
-
-  return (updated);
+    return (updated);
 }
 
 /*!
-    * @brief 状態遷移が行われたかどうかを返します
-    * @return true: statusが更新された false: 更新なし
-    * @note 読み取るたびに値はクリアされます
-    */
+* @brief 状態遷移が行われたかどうかを返します
+* @return true: statusが更新された false: 更新なし
+* @note 読み取るたびに値はクリアされます
+*/
 bool Statemachine::hasStatusUpdated(void){
     bool temp_flag = updated;
     updated = false;
@@ -115,10 +125,10 @@ Statemachine::EMeasCommand Statemachine::getMeasCommand(void){
 }
 
 /*!
-    * @brief マシンの内部状態を返します
-    * @param  
-    * @return EStatus型 
-    */
+* @brief マシンの内部状態を返します
+* @param  
+* @return EStatus型 
+*/
 Statemachine::EStatus Statemachine::getStatus(void){
     return machine_status;
 };
