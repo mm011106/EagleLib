@@ -200,6 +200,7 @@ void Measurement::executeMeasurement(void){
     // for debug
     if(DEBUG){Serial.print("execMeas::start "); Serial.print(micros());Serial.print(" ");}
 
+    Serial.println(the_last_meas);
     uint16_t result = 0;
     if (getCurrentSourceStatus()){
         sensor_error = false;
@@ -311,7 +312,7 @@ void Measurement::setCurrent(uint16_t current){
  */
 bool Measurement::getCurrentSourceStatus(void){
     if(DEBUG){Serial.print("C-C ");}
-    // return true;
+    return true;
 
     // FOR TESST
     // long rand = random(100);
