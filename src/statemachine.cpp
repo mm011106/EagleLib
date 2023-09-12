@@ -9,11 +9,8 @@
     */
 bool Statemachine::setTransitSignal(ETransit signal){
 
-  // for test
   if(DEBUG){Serial.print("(Signal:");}
-  // 
   previous_machine_status = machine_status;
-  bool update = true;  
 
   switch (signal) {
     //  スイッチのクリック
@@ -23,14 +20,10 @@ bool Statemachine::setTransitSignal(ETransit signal){
             machine_status = EStatus::MANUAL;
             command = EMeasCommand::START;
         }
-        // else if(machine_status == EStatus::MANUAL){
-        //   machine_status = EStatus::TIMER;
-        // }
         else if(machine_status == EStatus::CONT){
             machine_status = EStatus::TIMER;
             command = EMeasCommand::STOP;
         } else {
-            update = false;
             command = EMeasCommand::IDLE;
         }
         break;
@@ -45,7 +38,6 @@ bool Statemachine::setTransitSignal(ETransit signal){
             machine_status = EStatus::TIMER;
             command = EMeasCommand::STOP;
         } else {
-            update = false;
             command = EMeasCommand::IDLE;
         }   
         break;
@@ -57,7 +49,6 @@ bool Statemachine::setTransitSignal(ETransit signal){
             machine_status = EStatus::MANUAL;
             command = EMeasCommand::START;
         } else {
-            update = false;
             command = EMeasCommand::IDLE;
         }   
         break;
@@ -69,7 +60,6 @@ bool Statemachine::setTransitSignal(ETransit signal){
             machine_status = EStatus::TIMER;
             command = EMeasCommand::STOP;
         } else {
-            update = false;
             command = EMeasCommand::IDLE;
         }   
         break;
@@ -84,12 +74,10 @@ bool Statemachine::setTransitSignal(ETransit signal){
     //  現状維持    （通常は使わない）
     case ETransit::IDLE :
         if(DEBUG){Serial.print("IDLE)");}
-        update = false;
         command = EMeasCommand::IDLE;
     break;
 
     default:
-        update = false;
         command = EMeasCommand::IDLE;
     break;
     }

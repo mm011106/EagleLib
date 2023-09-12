@@ -80,10 +80,19 @@ class Statemachine {
         constexpr static bool DEBUG = false;
 
         // Vars
+        
+        // 現在のステータスを保持
         EStatus machine_status = EStatus::TIMER;
-        EStatus previous_machine_status = EStatus::TIMER;
-        bool updated = false;
+
+        // 発行コマンド
         EMeasCommand command = EMeasCommand::IDLE;
+ 
+        // 遷移命令を与えられたときの初期ステータスを保存する（遷移の有無を確認するため）
+        EStatus previous_machine_status = EStatus::TIMER;
+
+        // 状態遷移が行われたか
+        bool updated = false;
+
 
 };
 
