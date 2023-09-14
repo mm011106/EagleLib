@@ -22,8 +22,7 @@ void Measurement::init(void){
         single_meas_interval = single_meas_period/3;//[CLK count]   
     }
 
-    if(DEBUG){Serial.println(sensor_heat_propagation_time);}
-    if(DEBUG){Serial.print("Sensor Length:"); Serial.println(p_parameter->sensor_length);}
+    if(DEBUG){Serial.print("Sensor Length[inch]:"); Serial.println(p_parameter->sensor_length);}
     if(DEBUG){Serial.print("Delay Time:"); Serial.println(sensor_heat_propagation_time);}
     if(DEBUG){Serial.print("Sensor R:"); Serial.println(sensor_resistance);}
     // デバイスの校正値を設定
