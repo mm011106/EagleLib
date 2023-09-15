@@ -22,8 +22,7 @@ void Measurement::init(void){
         single_meas_interval = single_meas_period/3;//[CLK count]   
     }
 
-    if(DEBUG){Serial.println(sensor_heat_propagation_time);}
-    if(DEBUG){Serial.print("Sensor Length:"); Serial.println(p_parameter->sensor_length);}
+    if(DEBUG){Serial.print("Sensor Length[inch]:"); Serial.println(p_parameter->sensor_length);}
     if(DEBUG){Serial.print("Delay Time:"); Serial.println(sensor_heat_propagation_time);}
     if(DEBUG){Serial.print("Sensor R:"); Serial.println(sensor_resistance);}
     // デバイスの校正値を設定
@@ -153,11 +152,13 @@ void Measurement::setCommand(Measurement::ECommand command){
             break;
 
         case Measurement::ECommand::STOP :
-            if(busy_now){
-                terminateMeasurement();
-            } else {
-                if(DEBUG){Serial.println("Fail: CONT END command while ready.");}
-            }
+            // if(busy_now){
+            //     terminateMeasurement();
+            // } else {
+            //     if(DEBUG){Serial.println("OK: anyway, STOP measurement.");}
+            // }
+            if(DEBUG){Serial.println("Accept STOP command.");}
+            terminateMeasurement();
             break;
 
 
@@ -311,7 +312,7 @@ void Measurement::setCurrent(uint16_t current){
  */
 bool Measurement::getCurrentSourceStatus(void){
     if(DEBUG){Serial.print("C-C ");}
-    // return true;
+    return true;
 
     // FOR TESST
     // long rand = random(100);

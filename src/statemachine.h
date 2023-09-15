@@ -33,7 +33,8 @@ class Statemachine {
             CLICK,  //  操作スイッチ  クリック
             LONG,   //  操作スイッチ  長押し
             TIMEUP, //  タイマ計測
-            MEASCPL //  測定完了（一回計測で計測が完了した場合に発生する信号）
+            MEASCPL, //  計測ユニットからの測定完了信号（一回計測で計測が完了）
+            MEASERR //  計測ユニットからの計測エラー信号
         };
 
         // @brief ステートマシン状態一覧
@@ -75,11 +76,23 @@ class Statemachine {
         char getStatusChar(void);
 
     private:
+        // debug flag
+        constexpr static bool DEBUG = false;
+
         // Vars
+        
+        // 現在のステータスを保持
         EStatus machine_status = EStatus::TIMER;
-        EStatus previous_machine_status = EStatus::TIMER;
-        bool updated = false;
+
+        // 発行コマンド
         EMeasCommand command = EMeasCommand::IDLE;
+ 
+        // 遷移命令を与えられたときの初期ステータスを保存する（遷移の有無を確認するため）
+        EStatus previous_machine_status = EStatus::TIMER;
+
+        // 状態遷移が行われたか
+        bool updated = false;
+
 
 };
 
