@@ -152,11 +152,13 @@ void Measurement::setCommand(Measurement::ECommand command){
             break;
 
         case Measurement::ECommand::STOP :
-            if(busy_now){
-                terminateMeasurement();
-            } else {
-                if(DEBUG){Serial.println("Fail: STOP command while ready.");}
-            }
+            // if(busy_now){
+            //     terminateMeasurement();
+            // } else {
+            //     if(DEBUG){Serial.println("OK: anyway, STOP measurement.");}
+            // }
+            if(DEBUG){Serial.println("Accept STOP command.");}
+            terminateMeasurement();
             break;
 
 
@@ -199,7 +201,6 @@ void Measurement::executeMeasurement(void){
     // for debug
     if(DEBUG){Serial.print("execMeas::start "); Serial.print(micros());Serial.print(" ");}
 
-    Serial.println(the_last_meas);
     uint16_t result = 0;
     if (getCurrentSourceStatus()){
         sensor_error = false;
