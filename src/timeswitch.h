@@ -1,8 +1,8 @@
 /**************************************************************************/
 /*!
- * @file 
- * @brief 
- * @author 
+ * @file timeswitch.h/cpp
+ * @brief 周期計測用タイマ 0-90分
+ * @author m.miyamoto
  * @date 20230922
  * $Version:    0.0$
  * @par 
@@ -24,7 +24,6 @@ class TimeSwitch {
     // instances
 
     // vars
-
     
     // methods 
     /*!
@@ -75,7 +74,7 @@ class TimeSwitch {
     bool update = false;
     bool overflow = false;
     
-
+    // methods 
 };
 
 #endif //_TIMESWITCH_H_

@@ -4,7 +4,7 @@
 /// @brief タイマの初期化（必須）
 /// @param period タイマ周期の設定[min]
 /// @return True:正常完了  False:タイマ周期指定エラー
-/// @note 設定範囲は0-90で、１桁目は切り捨てられます
+/// @note 設定範囲は0-90で、１桁目は切り捨てられます @n ex: 12->10, 9->0, 57->50
 bool TimeSwitch::init(const uint16_t period){
     // タイマの設定値は 0−90    それ以外はエラーを返す
     if (period > 90){
