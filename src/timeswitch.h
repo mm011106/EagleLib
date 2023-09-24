@@ -51,7 +51,11 @@ class TimeSwitch {
 
     private:
     // consts
+
+    // デフォルトのタイマ周期[min]
     static constexpr uint16_t DEFAULT_TIMER_PERIOD = 60;
+
+    // 1分あたりのクロック数
     static constexpr uint16_t COUNTS_PER_MINUTES = 6000;
 
     // debug flag
@@ -61,13 +65,13 @@ class TimeSwitch {
 
     // vars
 
-    //  タイマ時間周期
+    //  タイマ周期設定値
     uint16_t timer_period = DEFAULT_TIMER_PERIOD; 
-    uint16_t timer_remaining = DEFAULT_TIMER_PERIOD;
 
     // 10ms単位のダウンカウンタ
     uint32_t counter_10ms = 0;
 
+    // 内部信号
     bool update = false;
     bool overflow = false;
     
