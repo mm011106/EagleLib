@@ -201,10 +201,11 @@ void Measurement::executeMeasurement(void){
     // for debug
     if(DEBUG){Serial.print("execMeas::start "); Serial.print(micros());Serial.print(" ");}
 
-    uint16_t result = 0;
+    // uint16_t result = 0;
     if (getCurrentSourceStatus()){
         sensor_error = false;
-        result = read_level();
+        measured_level = read_level();
+        result_ready = true;
     } else {
         sensor_error = true;
     }
@@ -230,10 +231,9 @@ void Measurement::executeMeasurement(void){
 
     // 測定結果を出力する処理
     // 電圧モニタへの出力
-    setVmon(result);
-    // LCD,UART向けの出力方法を考える
-    // フラグを出力(フラグ、getter必要)
-    // 結果を出力（getter必要）
+    // !!!  このクラスとVmon出力が強く結びついているが、それでいいか？？？
+    //      外部で出力するようにしなくてもいいか？？？
+    setVmon(measured_level);
 
     if(DEBUG){Serial.println("execMeas::End ");}
 }
@@ -269,6 +269,21 @@ bool Measurement::isSensorError(void){
     return sensor_error;
 }
 
+/// @brief 新しい測定結果があるかどうか
+/// @return True:あり   False:前回の結果のまま
+/// @note 一度読み出すとfalseにリセットされます
+bool Measurement::isResultReady(void){
+    bool temp = result_ready;
+    result_ready = false;
+    return temp;
+}
+
+/// @brief 測定結果を読み出す
+/// @return 液面値 [0.1%]
+/// @note 読み出しは常時可能ですが、最新かどうかはisResultReady()で確認してください。
+uint16_t Measurement::getResult(void){
+    return measured_level;
+}
 
 /*!
  * @brief 電流源をonにする

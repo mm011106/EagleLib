@@ -114,6 +114,8 @@ class Measurement {
     bool haveFinishedMeasurement(void); //正常測定完了信号      statemachine用    モーメンタリ
     bool haveFailedMesasurement(void);  //測定開始エラー信号    statemachine用    モーメンタリ
     bool isSensorError(void); //LCD表示用  オルタネート
+    bool isResultReady(void); // 測定結果が用意できているかどうかチェック   モーメンタリ
+    uint16_t getResult(void); // 測定結果の読み出し
 
 
     //  電流源制御
@@ -149,6 +151,8 @@ class Measurement {
     float sensor_resistance = 0.0;
     //  熱伝導待ち時間 [ms]
     uint16_t sensor_heat_propagation_time;
+    //  液面計測結果
+    uint16_t measured_level = 0;
 
     //  センサエラーフラグ
     bool sensor_error = false;
@@ -164,6 +168,9 @@ class Measurement {
 
     // 測定開始失敗のフラグ
     bool failed_meas = false;
+
+    // 測定終了（測定結果確定）のフラグ
+    bool result_ready = false;
 
     // I2Cバス占有したいフラグ
     bool occupy_the_bus = false;
