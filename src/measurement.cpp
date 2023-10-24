@@ -225,6 +225,19 @@ Measurement::EModes Measurement::getMode(void){
     return present_mode;
 };
 
+/// @brief 計測クラスが動作中かどうか
+/// @return True:測定可能   False:現在作業中
+bool Measurement::isReady(void){
+    return !busy_now;
+};
+
+/// @brief 測定要求
+/// @return True:測定してください   False:何もしなくていいです
+/// @note 測定開始のタイミングはmain()で制御します。このフラグを読んで計測を開始してください。
+bool Measurement::shouldMeasure(void){
+    return should_measure;
+};
+
 /*!
  * @brief 実際の計測動作を行う  エラー時は測定を中断する    一回計測の終了判断を行い終了させる
  * @note 実行には100ms程度かかる
@@ -394,7 +407,10 @@ void Measurement::setCurrent(uint16_t current){
  */
 bool Measurement::getCurrentSourceStatus(void){
     if(DEBUG){Serial.print("C-C ");}
-    return true;
+
+    return (   (pio->digitalRead(PIO_PORT::CURRENT_ENABLE ) == CURRENT_ON)  \
+            && (pio->digitalRead(PIO_PORT::CURRENT_ERRFLAG) == HIGH)        \
+    );
 
     // FOR TESST
     // long rand = random(100);
@@ -407,15 +423,30 @@ bool Measurement::getCurrentSourceStatus(void){
 
 /// @brief 電圧モニタ出力を設定する 
 /// @param vout 出力電圧[0.1V] 
-void Measurement::setVmon(uint16_t vout){
+void Measurement::setVmon(const uint16_t vout){
     if(DEBUG){Serial.print("Vout: set ");Serial.println(vout);}
+    uint16_t da_value=0;
+
+    //  100.0%以下の値ならそのまま設定、100.0%以上なら100.0%として設定
+    if (vout <= 1000) {
+        // da_value = ( VMON_COUNT_PER_VOLT * (value + 100) ) / 1000;
+        da_value = (( VMON_COUNT_PER_VOLT * vout ) / 1000) + (uint16_t)((VMON_COUNT_PER_VOLT / 10) - p_parameter->vmon_da_offset );
+
+    //     100.0% = 1.1V, 0%=0.1V 
+    } else {
+        da_value = (( VMON_COUNT_PER_VOLT * 1000 ) / 1000) + (uint16_t)((VMON_COUNT_PER_VOLT / 10) - p_parameter->vmon_da_offset );
+    }
+    v_mon_dac->setVoltage(da_value);
+
     return;
 }
 
 /// @brief  電圧モニタ出力にエラーを提示する（0V) 
 /// @param  void
 void Measurement::setVmonFailed(void){
-    if(DEBUG){Serial.println("Vout: Error indicate.");}    
+    if(DEBUG){Serial.println("Vout: Error indicate.");}
+    v_mon_dac->setVoltage((uint16_t) 0);
+    return;
 }
 
 // 
@@ -471,6 +502,6 @@ uint16_t Measurement::read_level(void){
     uint32_t current = read_current();
     // レベルの計算・補正
     occupy_the_bus = false;
-    return 1234;
+    return 500;
 }
 
