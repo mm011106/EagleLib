@@ -20,7 +20,7 @@
 #include <Adafruit_ADS1015.h>   // ADC 16bit diff - 2ch
 #include <Adafruit_MCP23008.h>  // PIO 8bit
 #include <Adafruit_MCP4725.h>   // DAC  12bit 
-// #include "DAC80501.h"           // DAC 16bit for Analog Mon Out
+#include "DAC80501.h"           // DAC 16bit for Analog Mon Out
 
 class Measurement {
 
@@ -137,13 +137,13 @@ class Measurement {
     // instances
     // デバイスのインスタンスへのポインタ 
     //  電流設定用DAコンバータ
-    // Adafruit_MCP4725*   current_adj_dac = nullptr;
+    Adafruit_MCP4725*   current_adj_dac = nullptr;
     // //  アナログモニタ出力用DAコンバータ
-    // DAC80501*           v_mon_dac = nullptr;
+    DAC80501*           v_mon_dac = nullptr;
     // //  電流源制御用    GPIO
-    // Adafruit_MCP23008*  pio = nullptr;
+    Adafruit_MCP23008*  pio = nullptr;
     // //  電圧・電流読み取り用ADコンバータ
-    // Adafruit_ADS1115*   adconverter = nullptr;
+    Adafruit_ADS1115*   meas_adc = nullptr;
 
     // vars
 
