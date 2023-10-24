@@ -487,10 +487,50 @@ uint32_t Measurement::read_voltage(void){
 /// @return 電流値[/uA]
 uint32_t Measurement::read_current(void){
     occupy_the_bus = true;
-    delay(100);// 計測に必要な時間のダミー
+    // delay(100);// 計測に必要な時間のダミー
     if(DEBUG){Serial.print("RCur ");}
+
+    float results = 0.0;
+    // float readout = 0.0;
+    uint32_t readout = 0;
+
+    // これは毎回やる必要ない。インスタンス化した時に１回やって、係数を決めてしまう。
+    // 
+    float adc_gain_coeff = 0.0;
+    switch (meas_adc->getGain()){
+      case adsGain_t::GAIN_TWOTHIRDS:
+        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_TWOTHIRDS;
+        break;
+
+      case adsGain_t::GAIN_ONE:
+        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_ONE;
+        break;
+
+      default:
+        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_TWO;
+        break;
+    }
+    // ここまで
+
+    Serial.print("Current Meas: read_voltage(2-3): ");
+    
+    for (uint16_t i = 0; i < ADC_AVERAGE_DEFAULT; i++){
+        uint16_t temp = (meas_adc->readADC_Differential_2_3() - p_parameter->adc_OFS_comp_diff_2_3);
+        Serial.print(", "); Serial.print(temp);  
+        readout += temp;
+    }
+
+    Serial.print(":conveted to Current Out(2-3):");
+    // results = results / (float)avg * coeff * ADC_ERR_COMPENSATION; // reading in microVolt
+    results = (float)readout / (float)ADC_AVERAGE_DEFAULT * adc_gain_coeff * p_parameter->adc_err_comp_diff_2_3; // reading in microVolt
+    results = results / (float)CURRENT_MEASURE_COEFF; // convert voltage to current.
+    Serial.print(results);
+    Serial.println(" uA: Fin. --");
+    
+
     occupy_the_bus = false;
-    return 5555;
+    return round(results);
+    // return 5555;
 }
 
 /// @brief 液面計測を実行
