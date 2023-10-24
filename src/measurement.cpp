@@ -477,21 +477,53 @@ void Measurement::terminateMeasurement(void){
 /// @return 電圧値[/uV]
 uint32_t Measurement::read_voltage(void){
     occupy_the_bus = true;
-    delay(100);// 計測に必要な時間のダミー
+
     if(DEBUG){Serial.print("RVol ");}
+
+    float result = 0.0;
+    int32_t readout = 0.0;
+
+    Serial.print("Voltage Meas: read_voltage(0-1): ");
+
+    for (uint16_t i = 0; i < ADC_AVERAGE_DEFAULT; i++){
+    //   results += (float)adconverter.readADC_Differential_0_1();
+        int16_t temp = (meas_adc->readADC_Differential_0_1() - p_parameter->adc_OFS_comp_diff_0_1);
+        Serial.print(", "); Serial.print(temp);  
+        readout += temp;
+    }
+
+    float adc_gain_coeff=0.0;
+    switch (meas_adc->getGain()){
+      case adsGain_t::GAIN_TWOTHIRDS:
+        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_TWOTHIRDS;
+        break;
+
+      case adsGain_t::GAIN_ONE:
+        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_ONE;
+        break;
+
+      default:
+        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_TWO;
+        break;
+    }
+
+    result = (float)readout / (float)ADC_AVERAGE_DEFAULT * adc_gain_coeff * p_parameter->adc_err_comp_diff_0_1 * ATTENUATOR_COEFF;
+
+    Serial.print(":"); Serial.print(result); Serial.println(" uV: Fin. --");
+
     occupy_the_bus = false;
-    return 2222;
+    return round(result);
+    // return 2222;
 }
 
 /// @brief 電流を読み取る
 /// @return 電流値[/uA]
 uint32_t Measurement::read_current(void){
     occupy_the_bus = true;
-    // delay(100);// 計測に必要な時間のダミー
+
     if(DEBUG){Serial.print("RCur ");}
 
     float results = 0.0;
-    // float readout = 0.0;
     uint32_t readout = 0;
 
     // これは毎回やる必要ない。インスタンス化した時に１回やって、係数を決めてしまう。
