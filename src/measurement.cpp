@@ -82,7 +82,8 @@ void Measurement::init(void){
     if(meas_adc){delete meas_adc;}
     meas_adc = new Adafruit_ADS1115(I2C_ADDR::ADC);
     meas_adc->begin();
-    meas_adc->setGain(adsGain_t::GAIN_TWO); 
+    meas_adc->setGain(adsGain_t::GAIN_TWO);
+    adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_TWO;
 
     // 確認として、インスタンスのアドレスとサイズを印字
     if(DEBUG){
@@ -473,107 +474,65 @@ void Measurement::terminateMeasurement(void){
     return;
 }
 
-/// @brief 電圧を読み取る
-/// @return 電圧値[/uV]
+// @brief 電圧を読み取る
+// @return 電圧値[/uV]
+// @note 回路定数から逆算して実際のセンサ両端の電圧を返します 
 uint32_t Measurement::read_voltage(void){
+    if(DEBUG){Serial.print("RVol ");}
+    uint32_t result = (uint32_t)((float)read_raw_voltage(0) * ATTENUATOR_COEFF);
+    if(DEBUG){Serial.print(":"); Serial.print(result); Serial.println(" uV: Fin. --");}
+    return result;
+}
+
+// @brief 電流を読み取る
+// @return 電流値[/uA]
+// @note 電流検出回路の定数と計測電圧を基にセンサに流れている電流を計算し返します
+uint32_t Measurement::read_current(void){
+    if(DEBUG){Serial.print("RCur ");}
+    uint32_t result = (uint32_t)((float)read_raw_voltage(1) / CURRENT_MEASURE_COEFF); // convert voltage to current.
+    if(DEBUG){Serial.print(":"); Serial.print(result);Serial.println(" uA: Fin. --");}
+    return result;
+}
+
+// @brief ADCの指定チャネルを動作させ電圧値を読み取ります
+// @param チャネル指定 uint8_t 0:ch 0-1 / 1:ch 2-3
+// @return  指定したチャネルの電圧値[micro Volt]
+int32_t Measurement::read_raw_voltage(const uint8_t channel){
     occupy_the_bus = true;
 
-    if(DEBUG){Serial.print("RVol ");}
-
-    float result = 0.0;
-    int32_t readout = 0.0;
-
-    Serial.print("Voltage Meas: read_voltage(0-1): ");
-
+    if(DEBUG){Serial.print("rawV ch:");Serial.print(channel);Serial.print(":");}
+    uint32_t readout = 0;
     for (uint16_t i = 0; i < ADC_AVERAGE_DEFAULT; i++){
-    //   results += (float)adconverter.readADC_Differential_0_1();
-        int16_t temp = (meas_adc->readADC_Differential_0_1() - p_parameter->adc_OFS_comp_diff_0_1);
-        Serial.print(", "); Serial.print(temp);  
+        int16_t temp = 0;
+        if (channel == 0){
+            temp = (meas_adc->readADC_Differential_0_1() - p_parameter->adc_OFS_comp_diff_0_1);
+        } else {
+            temp = (meas_adc->readADC_Differential_2_3() - p_parameter->adc_OFS_comp_diff_2_3);
+        }
+        if(DEBUG){Serial.print(", "); Serial.print(temp); } 
         readout += temp;
     }
-
-    float adc_gain_coeff=0.0;
-    switch (meas_adc->getGain()){
-      case adsGain_t::GAIN_TWOTHIRDS:
-        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_TWOTHIRDS;
-        break;
-
-      case adsGain_t::GAIN_ONE:
-        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_ONE;
-        break;
-
-      default:
-        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_TWO;
-        break;
+    float_t gain_comp = 0.0;
+    if (channel == 0){
+        gain_comp = p_parameter->adc_err_comp_diff_0_1;
+    } else {
+        gain_comp = p_parameter->adc_err_comp_diff_2_3;
     }
-
-    result = (float)readout / (float)ADC_AVERAGE_DEFAULT * adc_gain_coeff * p_parameter->adc_err_comp_diff_0_1 * ATTENUATOR_COEFF;
-
-    Serial.print(":"); Serial.print(result); Serial.println(" uV: Fin. --");
+    float_t result = (float)(readout / ADC_AVERAGE_DEFAULT) * adc_gain_coeff * gain_comp; // reading in microVolt
 
     occupy_the_bus = false;
     return round(result);
-    // return 2222;
-}
+};
 
-/// @brief 電流を読み取る
-/// @return 電流値[/uA]
-uint32_t Measurement::read_current(void){
-    occupy_the_bus = true;
-
-    if(DEBUG){Serial.print("RCur ");}
-
-    float results = 0.0;
-    uint32_t readout = 0;
-
-    // これは毎回やる必要ない。インスタンス化した時に１回やって、係数を決めてしまう。
-    // 
-    float adc_gain_coeff = 0.0;
-    switch (meas_adc->getGain()){
-      case adsGain_t::GAIN_TWOTHIRDS:
-        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_TWOTHIRDS;
-        break;
-
-      case adsGain_t::GAIN_ONE:
-        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_ONE;
-        break;
-
-      default:
-        adc_gain_coeff = ADC_READOUT_VOLTAGE_COEFF::GAIN_TWO;
-        break;
-    }
-    // ここまで
-
-    Serial.print("Current Meas: read_voltage(2-3): ");
-    
-    for (uint16_t i = 0; i < ADC_AVERAGE_DEFAULT; i++){
-        uint16_t temp = (meas_adc->readADC_Differential_2_3() - p_parameter->adc_OFS_comp_diff_2_3);
-        Serial.print(", "); Serial.print(temp);  
-        readout += temp;
-    }
-
-    Serial.print(":conveted to Current Out(2-3):");
-    // results = results / (float)avg * coeff * ADC_ERR_COMPENSATION; // reading in microVolt
-    results = (float)readout / (float)ADC_AVERAGE_DEFAULT * adc_gain_coeff * p_parameter->adc_err_comp_diff_2_3; // reading in microVolt
-    results = results / (float)CURRENT_MEASURE_COEFF; // convert voltage to current.
-    Serial.print(results);
-    Serial.println(" uA: Fin. --");
-    
-
-    occupy_the_bus = false;
-    return round(results);
-    // return 5555;
-}
 
 /// @brief 液面計測を実行
 /// @param void 
 /// @return uint16_t 液面 [0.1%] 
 uint16_t Measurement::read_level(void){
-    occupy_the_bus = true;
     uint32_t voltage = read_voltage();
     uint32_t current = read_current();
     // レベルの計算・補正
-    occupy_the_bus = false;
+
     return 500;
 }
 

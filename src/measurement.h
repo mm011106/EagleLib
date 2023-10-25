@@ -174,6 +174,9 @@ class Measurement {
     uint16_t single_meas_period = 0;
     bool single_last_meas = false;
 
+    // 計測用ADCゲイン係数 mirco volt/LSB
+    float adc_gain_coeff = 0.0;
+
     //  現在の動作モードを保持
     EModes present_mode = EModes::TIMER;
 
@@ -189,6 +192,7 @@ class Measurement {
     void terminateMeasurement(void);
 
     //  電圧・電流値の読み取り
+    int32_t  read_raw_voltage(const uint8_t channel);
     uint32_t read_voltage(void);
     uint32_t read_current(void);
     uint16_t read_level(void);
