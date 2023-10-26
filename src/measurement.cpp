@@ -345,20 +345,20 @@ bool Measurement::currentOn(void){
     // if(DEBUG){Serial.println("CurrentSoruce ON");}
 
 
-    Serial.print("currentCtrl:ON -- "); 
+    if(DEBUG){Serial.print("currentCtrl:ON --  ");} 
     pio->digitalWrite(PIO_PORT::CURRENT_ENABLE, CURRENT_ON);
     delay(10); // エラー判定が可能になるまで10ms待つ
     
     if (pio->digitalRead(PIO_PORT::CURRENT_ERRFLAG) == LOW){
         // f_sensor_error = true;
         pio->digitalWrite(PIO_PORT::CURRENT_ENABLE, CURRENT_OFF);
-        Serial.print(" FAIL.  ");
+        if(DEBUG){Serial.print(" FAIL.  ");}
     } else {
         // f_sensor_error = false;
         delay(100); // issue1: 電流のステイブルを待つ
-        Serial.print(" OK.  ");
+        if(DEBUG){Serial.print(" OK.  ");}
     }
-    Serial.println("Fin. --");
+    if(DEBUG){Serial.println("Fin. --");}
 
     return true;
 
@@ -380,9 +380,9 @@ bool Measurement::currentOn(void){
  */
 void Measurement::currentOff(void){
     // if(DEBUG){Serial.println("CurrentSoruce OFF");}
-    Serial.print("currentCtrl:OFF  -- ");
+    if(DEBUG){Serial.print("currentCtrl:OFF  -- ");}
     pio->digitalWrite(PIO_PORT::CURRENT_ENABLE, CURRENT_OFF);      
-    Serial.println(" Fin. --");
+    if(DEBUG){Serial.println(" Fin. --");}
     return ;
 }
 
@@ -394,10 +394,10 @@ void Measurement::setCurrent(uint16_t current){
     if(DEBUG){Serial.print("CurrentSoruce set ");Serial.println(current);}
     if ( 670 < current && current < 830){
         uint16_t value = (( current - 666 ) * DAC_COUNT_PER_VOLT) / CURRENT_SORCE_VI_COEFF;
-        Serial.print(" value:"); Serial.print(value);
+        if(DEBUG){Serial.print(" value:"); Serial.print(value);}
         // current -> vref converting function
         current_adj_dac->setVoltage(value, false);
-        Serial.println(" - DAC changed. " ); 
+        if(DEBUG){Serial.println(" - DAC changed. " );}
       }
     return;
 }
@@ -529,10 +529,37 @@ int32_t Measurement::read_raw_voltage(const uint8_t channel){
 /// @param void 
 /// @return uint16_t 液面 [0.1%] 
 uint16_t Measurement::read_level(void){
-    uint32_t voltage = read_voltage();
-    uint32_t current = read_current();
+    // uint32_t voltage = read_voltage();
+    // uint32_t current = read_current();
     // レベルの計算・補正
-
-    return 500;
+    float_t ratio = ((float)read_voltage()/(float)read_current()) / sensor_resistance ;
+    if(DEBUG){Serial.print(" Resistance = "); Serial.println( ratio * sensor_resistance);}
+    if(DEBUG){Serial.print(" Ratio = "); Serial.println( ratio, 4 );}
+    // センサの抵抗値誤差のマージンを2%とって確実にゼロ表示ができるようにする
+    int16_t result = round((1.0 - ratio*1.02) * 1000);
+    level_scaling(result, 1.0, 0.0);
+    return (uint16_t)result;
 }
 
+// @brief 液面測定値をスケーリングする
+// @param level:スケーリングする液面値（参照渡し） 
+// @param hiside_scle:100%表示にする計測レベル (0.0--1.0) : default 1.0 
+// @param lowside_scale:0%表示にする計測レベル (0.0--1.0) : default 0.0
+// @return 引数levelに返します
+// @note hiside_scle > lowside_scale の必要があります。
+void Measurement::level_scaling(int16_t& level, const float_t& hiside_scale, const float_t& lowside_scale){
+    if (hiside_scale < lowside_scale){return;}
+    if (hiside_scale < 0 or hiside_scale > 1.0 ){return;}
+    if (lowside_scale < 0 or lowside_scale > 1.0 ){return;}
+
+    level = (int16_t) ( ((float)level/1000.0 - lowside_scale)/(hiside_scale - lowside_scale) * 1000.0);
+    // limitter
+    if(level > 1000){
+        level = 1000;
+    }
+    if (level < 0){
+        level = 0;
+    }
+    if(DEBUG){Serial.print(" scaled level = "); Serial.println( level );}
+    return;
+}

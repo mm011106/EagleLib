@@ -196,6 +196,7 @@ class Measurement {
     uint32_t read_voltage(void);
     uint32_t read_current(void);
     uint16_t read_level(void);
+    void level_scaling(int16_t& level, const float_t& hiside_scle = 1.0, const float_t& lowside_scale = 0.0);
 
 };
 
