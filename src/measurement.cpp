@@ -537,7 +537,7 @@ uint16_t Measurement::read_level(void){
     if(DEBUG){Serial.print(" Ratio = "); Serial.println( ratio, 4 );}
     // センサの抵抗値誤差のマージンを2%とって確実にゼロ表示ができるようにする
     int16_t result = round((1.0 - ratio*1.02) * 1000);
-    level_scaling(result, 1.0, 0.0);
+    level_scaling(result, p_parameter->scale_100, p_parameter->scale_0);
     return (uint16_t)result;
 }
 
@@ -547,12 +547,13 @@ uint16_t Measurement::read_level(void){
 // @param lowside_scale:0%表示にする計測レベル (0.0--1.0) : default 0.0
 // @return 引数levelに返します
 // @note hiside_scle > lowside_scale の必要があります。
-void Measurement::level_scaling(int16_t& level, const float_t& hiside_scale, const float_t& lowside_scale){
+void Measurement::level_scaling(int16_t& level, const uint16_t& hiside_scale, const uint16_t& lowside_scale){
     if (hiside_scale < lowside_scale){return;}
-    if (hiside_scale < 0 or hiside_scale > 1.0 ){return;}
-    if (lowside_scale < 0 or lowside_scale > 1.0 ){return;}
-
-    level = (int16_t) ( ((float)level/1000.0 - lowside_scale)/(hiside_scale - lowside_scale) * 1000.0);
+    if (hiside_scale < 0 or hiside_scale > 1000 ){return;}
+    if (lowside_scale < 0 or lowside_scale > 1000 ){return;}
+    if(DEBUG){Serial.print(" scaling = "); Serial.print( hiside_scale ); Serial.print(":"); Serial.println(lowside_scale);}
+    
+    level = (int16_t) ( (float)(level - lowside_scale)/(float)(hiside_scale - lowside_scale) * 1000.0);
     // limitter
     if(level > 1000){
         level = 1000;

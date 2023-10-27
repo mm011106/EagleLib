@@ -51,7 +51,11 @@ class Measurement {
         uint8_t sensor_length;
         //  タイマ設定  [s]
         uint16_t timer_period;
-
+        //  スケーリング
+        //      100%表示をセンサ長の何%に設定するか [0.1%]
+        uint16_t scale_100 = 1000;
+        //      0%表示をセンサ長の何%に設定するか [0.1%]
+        uint16_t scale_0 = 0;
         //  計測ユニットの校正値
         //      ADコンバータのエラー補正系数    電圧計測
         float_t adc_err_comp_diff_0_1;
@@ -196,7 +200,7 @@ class Measurement {
     uint32_t read_voltage(void);
     uint32_t read_current(void);
     uint16_t read_level(void);
-    void level_scaling(int16_t& level, const float_t& hiside_scle = 1.0, const float_t& lowside_scale = 0.0);
+    void level_scaling(int16_t& level, const uint16_t& hiside_scle = 1000, const uint16_t& lowside_scale = 0);
 
 };
 
