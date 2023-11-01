@@ -20,7 +20,7 @@
 #include <Adafruit_ADS1015.h>   // ADC 16bit diff - 2ch
 #include <Adafruit_MCP23008.h>  // PIO 8bit
 #include <Adafruit_MCP4725.h>   // DAC  12bit 
-// #include "DAC80501.h"           // DAC 16bit for Analog Mon Out
+#include "DAC80501.h"           // DAC 16bit for Analog Mon Out
 
 class Measurement {
 
@@ -51,7 +51,11 @@ class Measurement {
         uint8_t sensor_length;
         //  タイマ設定  [s]
         uint16_t timer_period;
-
+        //  スケーリング
+        //      100%表示をセンサ長の何%に設定するか [0.1%]
+        uint16_t scale_100 = 1000;
+        //      0%表示をセンサ長の何%に設定するか [0.1%]
+        uint16_t scale_0 = 0;
         //  計測ユニットの校正値
         //      ADコンバータのエラー補正系数    電圧計測
         float_t adc_err_comp_diff_0_1;
@@ -92,40 +96,30 @@ class Measurement {
     void init(void);
     void clk_in(void);
 
-    /// @brief 計測クラスが動作中かどうか
-    /// @return True:測定可能   False:現在作業中
-    bool isReady(void){
-        return !busy_now;
-    };
+ 
 
     // ユニットの設定
     void setCommand(Measurement::ECommand command);
     void setMode(Measurement::EModes mode);
     EModes getMode(void);
 
-    // 実際の測定を実行
+    // 測定関連
+    bool isReady(void);
+    bool shouldMeasure(void);
     void executeMeasurement(void);
-    bool shouldMeasure(void){
-        return should_measure;
-    }
+    bool isSensorError(void); 
+    bool isResultReady(void); 
+    uint16_t getResult(void); 
 
-    //  外部への通知
-    bool shouldVacateI2Cbus(void);
+    //  statemachineへのフィードバック 
     bool haveFinishedMeasurement(void); //正常測定完了信号      statemachine用    モーメンタリ
     bool haveFailedMesasurement(void);  //測定開始エラー信号    statemachine用    モーメンタリ
-    bool isSensorError(void); //LCD表示用  オルタネート
-    bool isResultReady(void); // 測定結果が用意できているかどうかチェック   モーメンタリ
-    uint16_t getResult(void); // 測定結果の読み出し
 
-
-    //  電流源制御
-    bool currentOn(void);
-    void currentOff(void);
-    void setCurrent(uint16_t current = 750);
-    bool getCurrentSourceStatus(void);
+    //  I2Cバス制御
+    bool shouldVacateI2Cbus(void);
 
     //  モニタ出力制御
-    void setVmon(uint16_t vout);
+    void setVmon(const uint16_t vout);
     void setVmonFailed(void);
 
     private:
@@ -137,13 +131,13 @@ class Measurement {
     // instances
     // デバイスのインスタンスへのポインタ 
     //  電流設定用DAコンバータ
-    // Adafruit_MCP4725*   current_adj_dac = nullptr;
+    Adafruit_MCP4725*   current_adj_dac = nullptr;
     // //  アナログモニタ出力用DAコンバータ
-    // DAC80501*           v_mon_dac = nullptr;
+    DAC80501*           v_mon_dac = nullptr;
     // //  電流源制御用    GPIO
-    // Adafruit_MCP23008*  pio = nullptr;
+    Adafruit_MCP23008*  pio = nullptr;
     // //  電圧・電流読み取り用ADコンバータ
-    // Adafruit_ADS1115*   adconverter = nullptr;
+    Adafruit_ADS1115*   meas_adc = nullptr;
 
     // vars
 
@@ -184,16 +178,29 @@ class Measurement {
     uint16_t single_meas_period = 0;
     bool single_last_meas = false;
 
+    // 計測用ADCゲイン係数 mirco volt/LSB
+    float adc_gain_coeff = 0.0;
+
     //  現在の動作モードを保持
     EModes present_mode = EModes::TIMER;
 
     // methods 
+
+    //  電流源制御
+    bool currentOn(void);
+    void currentOff(void);
+    void setCurrent(uint16_t current = 750);
+    bool getCurrentSourceStatus(void);
+
+    // 計測制御
     void terminateMeasurement(void);
 
     //  電圧・電流値の読み取り
+    int32_t  read_raw_voltage(const uint8_t channel);
     uint32_t read_voltage(void);
     uint32_t read_current(void);
     uint16_t read_level(void);
+    void level_scaling(int16_t& level, const uint16_t& hiside_scle = 1000, const uint16_t& lowside_scale = 0);
 
 };
 
