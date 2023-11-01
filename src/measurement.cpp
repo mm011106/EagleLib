@@ -342,9 +342,6 @@ uint16_t Measurement::getResult(void){
  * @brief 電流源をonにする
  */
 bool Measurement::currentOn(void){
-    // if(DEBUG){Serial.println("CurrentSoruce ON");}
-
-
     if(DEBUG){Serial.print("currentCtrl:ON --  ");} 
     pio->digitalWrite(PIO_PORT::CURRENT_ENABLE, CURRENT_ON);
     delay(10); // エラー判定が可能になるまで10ms待つ
@@ -361,7 +358,6 @@ bool Measurement::currentOn(void){
     if(DEBUG){Serial.println("Fin. --");}
 
     return true;
-
 
     // FOR TEST
     // return false;
@@ -390,7 +386,7 @@ void Measurement::currentOff(void){
  * @brief 電流源を設定する
  * @param current 設定電流値[0.1mA]
  */
-void Measurement::setCurrent(uint16_t current){
+void Measurement::setCurrent(const uint16_t& current){
     if(DEBUG){Serial.print("CurrentSoruce set ");Serial.println(current);}
     if ( 670 < current && current < 830){
         uint16_t value = (( current - 666 ) * DAC_COUNT_PER_VOLT) / CURRENT_SORCE_VI_COEFF;
@@ -424,7 +420,7 @@ bool Measurement::getCurrentSourceStatus(void){
 
 /// @brief 電圧モニタ出力を設定する 
 /// @param vout 出力電圧[0.1V] 
-void Measurement::setVmon(const uint16_t vout){
+void Measurement::setVmon(const uint16_t& vout){
     if(DEBUG){Serial.print("Vout: set ");Serial.println(vout);}
     uint16_t da_value=0;
 

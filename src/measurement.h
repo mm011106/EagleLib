@@ -31,21 +31,21 @@ class Measurement {
     * @brief 計測ユニットへのコマンド一覧
     */
     enum class ECommand : uint8_t{
-        IDLE = 0,
-        START,
-        STOP
-        // SINGLE,
-        // CONTSTART,
-        // CONTEND,
-        // TERMINATE
+        IDLE = 0,   // 何もしない、現状のまま
+        START,      //  測定開始
+        STOP        //  測定停止
     };
 
     /*!
     * @brief 動作モード一覧
     */
-    enum class EModes{MANUAL = 0, TIMER, CONTINUOUS};
+    enum class EModes{
+        MANUAL = 0,
+        TIMER,
+        CONTINUOUS
+    };
     
-    // @brief 計測のための設定値、校正値を保存する構造体 //20byte
+    // @brief 計測のための設定値、校正値を保存する構造体 //24byte
     struct MesasUintParameters{
         //  センサ長 [inch]
         uint8_t sensor_length;
@@ -119,7 +119,7 @@ class Measurement {
     bool shouldVacateI2Cbus(void);
 
     //  モニタ出力制御
-    void setVmon(const uint16_t vout);
+    void setVmon(const uint16_t& vout);
     void setVmonFailed(void);
 
     private:
@@ -189,7 +189,7 @@ class Measurement {
     //  電流源制御
     bool currentOn(void);
     void currentOff(void);
-    void setCurrent(uint16_t current = 750);
+    void setCurrent(const uint16_t& current = 750);
     bool getCurrentSourceStatus(void);
 
     // 計測制御
