@@ -545,8 +545,7 @@ uint16_t Measurement::read_level(void){
 // @note hiside_scle > lowside_scale の必要があります。
 void Measurement::level_scaling(int16_t& level, const uint16_t& hiside_scale, const uint16_t& lowside_scale){
     if (hiside_scale < lowside_scale){return;}
-    if (hiside_scale < 0 or hiside_scale > 1000 ){return;}
-    if (lowside_scale < 0 or lowside_scale > 1000 ){return;}
+    if (hiside_scale > 1000 ){return;}
     if(DEBUG){Serial.print(" scaling = "); Serial.print( hiside_scale ); Serial.print(":"); Serial.println(lowside_scale);}
     
     level = (int16_t) ( (float)(level - lowside_scale)/(float)(hiside_scale - lowside_scale) * 1000.0);
