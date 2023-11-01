@@ -100,7 +100,7 @@ class EH_LED {
         };
 
 
-        bool setMode(E_IllumiMode mode = DEFAULT_ILLUMI_MODE, const uint16_t& blink_period = DEFAULT_BLINK_PERIOD  );
+        bool setMode(const E_IllumiMode& mode = DEFAULT_ILLUMI_MODE, const uint16_t& blink_period = DEFAULT_BLINK_PERIOD  );
         void clk_in(void);
 
         bool acquire(void);
