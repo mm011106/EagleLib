@@ -42,7 +42,7 @@ class EH_switch {
          * @param port_number:  SWが接続されているポート番号（Arduino名もしくはSTM32ポート番号_ALT)
          * @note アクティブHIを想定している
          */
-        EH_switch(uint32_t port_number){
+        EH_switch(const uint32_t& port_number){
             SW_port_number = port_number;
             pinMode(SW_port_number, INPUT);
         };
@@ -151,7 +151,7 @@ class EH_switch {
         /*!
          * @brief 内部の変数をクリアして次のイベントを準備します
          */ 
-        void clearStatus(){
+        void clearStatus(void){
             last_status = false;
             SW_state = false;
             pushed = false;

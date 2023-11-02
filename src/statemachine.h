@@ -28,7 +28,7 @@ class Statemachine {
         // Constatnts
 
         /// @brief ステートマシンの状態遷移イベント一覧
-        enum class ETransit : uint8_t{
+        enum class E_Transit : uint8_t{
             IDLE = 0,
             CLICK,  //  操作スイッチ  クリック
             LONG,   //  操作スイッチ  長押し
@@ -38,17 +38,17 @@ class Statemachine {
         };
 
         // @brief ステートマシン状態一覧
-        enum class EStatus : uint8_t {
+        enum class E_Status : uint8_t {
             TIMER = 0,
             MANUAL,
             CONT
         };
 
-        /// @brief モード表示のための文字配列（EStatusと連携）
+        /// @brief モード表示のための文字配列（E_Statusと連携）
         const char ModeInd[3]={'T','M','C'};
 
         /// @brief 発行する計測コマンド一覧
-        enum class EMeasCommand : uint8_t{
+        enum class E_MeasCommand : uint8_t{
             IDLE = 0,
             START,
             STOP
@@ -69,10 +69,10 @@ class Statemachine {
         ~Statemachine(){
         };
 
-        bool setTransitSignal(ETransit signal);
+        bool setTransitSignal(E_Transit signal);
         bool hasStatusUpdated(void);
-        EMeasCommand getMeasCommand(void);
-        EStatus getStatus(void);
+        E_MeasCommand getMeasCommand(void);
+        E_Status getStatus(void);
         char getStatusChar(void);
 
     private:
@@ -82,13 +82,13 @@ class Statemachine {
         // Vars
         
         // 現在のステータスを保持
-        EStatus machine_status = EStatus::TIMER;
+        E_Status machine_status = E_Status::TIMER;
 
         // 発行コマンド
-        EMeasCommand command = EMeasCommand::IDLE;
+        E_MeasCommand command = E_MeasCommand::IDLE;
  
         // 遷移命令を与えられたときの初期ステータスを保存する（遷移の有無を確認するため）
-        EStatus previous_machine_status = EStatus::TIMER;
+        E_Status previous_machine_status = E_Status::TIMER;
 
         // 状態遷移が行われたか
         bool updated = false;
