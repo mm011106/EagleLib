@@ -104,7 +104,7 @@ void Measurement::clk_in(void){
  
     //  CLKに同期した処理を記載
     // 連続計測の処理
-    if (present_mode == EModes::CONTINUOUS){
+    if (present_mode == E_Modes::CONTINUOUS){
         //  1秒に一回計測
         if (cont_meas_inteval_counter++ > CONT_MEAS_INTERVAL){
             cont_meas_inteval_counter=0;
@@ -114,7 +114,7 @@ void Measurement::clk_in(void){
     };
 
     // 1回計測の処理     
-    if (present_mode == EModes::MANUAL){
+    if (present_mode == E_Modes::MANUAL){
         // 熱伝搬時間の1/3ごとに計測
         //      伝搬時間中に３回計測して、２CLK余分に時間待ってから最終計測(else節）を実行
         //      should_measureフラグがCLK時間で連続して立たないように配慮
@@ -165,20 +165,20 @@ void Measurement::clk_in(void){
 };
 
 /// @brief 計測クラスに計測の命令を与えます
-/// @param ECommand::command  命令 
-void Measurement::setCommand(Measurement::ECommand command){
+/// @param E_Command::command  命令 
+void Measurement::setCommand(Measurement::E_Command command){
 
     switch (command){
-        case Measurement::ECommand::START :
+        case Measurement::E_Command::START :
             if (!busy_now){
                 busy_now = true;
                 if (currentOn()){
                     sensor_error = false;
-                    if (present_mode == EModes::MANUAL){//一回計測の準備
+                    if (present_mode == E_Modes::MANUAL){//一回計測の準備
                         if(DEBUG){Serial.print("SINGLE Start. ");Serial.println(micros());}
                         single_meas_counter = 0;
                     }
-                    if (present_mode == EModes::CONTINUOUS){// 連続計測の準備
+                    if (present_mode == E_Modes::CONTINUOUS){// 連続計測の準備
                         if(DEBUG){Serial.println("CONT Start.");}
                     }
                 }else{
@@ -191,7 +191,7 @@ void Measurement::setCommand(Measurement::ECommand command){
             }
             break;
 
-        case Measurement::ECommand::STOP :
+        case Measurement::E_Command::STOP :
             // if(busy_now){
             //     terminateMeasurement();
             // } else {
@@ -202,7 +202,7 @@ void Measurement::setCommand(Measurement::ECommand command){
             break;
 
 
-        case Measurement::ECommand::IDLE :
+        case Measurement::E_Command::IDLE :
             if(DEBUG){Serial.print("busy:");Serial.print(busy_now);Serial.print(" - error:");Serial.print(sensor_error);}
             // Serial.print(" - cont:");Serial.println(exec_cont_measurement);
             if(DEBUG){Serial.println("Measurement status did not change.");}
@@ -215,14 +215,14 @@ void Measurement::setCommand(Measurement::ECommand command){
 }
 
 /// @brief 計測モードをセットする
-void Measurement::setMode(Measurement::EModes mode){
+void Measurement::setMode(Measurement::E_Modes mode){
     present_mode = mode;
     return;
 }
 
 /// @brief 現在の計測モードを返す
-/// @return EModes
-Measurement::EModes Measurement::getMode(void){
+/// @return E_Modes
+Measurement::E_Modes Measurement::getMode(void){
     return present_mode;
 };
 
@@ -456,7 +456,7 @@ void Measurement::setVmonFailed(void){
 void Measurement::terminateMeasurement(void){
     should_measure = false;
     currentOff();
-    // present_mode = EModes::TIMER;
+    // present_mode = E_Modes::TIMER;
     busy_now = false;
     if (sensor_error){      // センサーエラーでターミネートされたら異常終了
 

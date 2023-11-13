@@ -7,7 +7,7 @@
     * @return true: statusが更新された false: 更新なし
     * @note 計測コマンド(command)もこの中でセットされる
     */
-bool Statemachine::setTransitSignal(E_Transit signal){
+bool Statemachine::setTransitSignal(const E_Transit signal){
 
   if(DEBUG){Serial.print("(Signal:");}
   previous_machine_status = machine_status;

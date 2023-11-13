@@ -69,7 +69,7 @@ class Statemachine {
         ~Statemachine(){
         };
 
-        bool setTransitSignal(E_Transit signal);
+        bool setTransitSignal(const E_Transit signal);
         bool hasStatusUpdated(void);
         E_MeasCommand getMeasCommand(void);
         E_Status getStatus(void);
