@@ -23,11 +23,13 @@ class ParameterStorage : public Adafruit_FRAM_I2C {
     // consts
     static constexpr size_t SER_NUM_MAX_LENGTH = 16;
 
+    //  保存するパラメタの種類名を定義  要素の値は保存先のアドレス 
     enum class E_ParameterCategories : uint16_t{
         SENSOR_LENGTH = 0x40,
         TIMER_PERIOD = 0x48,
-        CAL_DATA = 0x60,
-        SERIAL_NUMBER =0x50
+        SERIAL_NUMBER =0x50,
+        SCALING = 0x60,
+        CAL_DATA = 0x70
     };
     // instances
 
