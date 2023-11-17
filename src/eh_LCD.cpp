@@ -285,6 +285,7 @@ void EhLcd::setError(const bool error){
         msg = sensor_length;
         display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].mode = HOLD_MODE;
     }
+    display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].state = true; // BLINK_MODEからHOLD_MODEに戻したら、必ずstateをtrueにすること
     display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].text = msg;
     display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].refresh = true;
 }
