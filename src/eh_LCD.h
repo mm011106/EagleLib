@@ -42,7 +42,7 @@ class EhLcd : public rgb_lcd {
 
         // 表示項目ごとのプロパティに名前でアクセスするための列挙型
         // 
-        enum class EDisplayItemName {
+        enum class E_DisplayItemName {
             MODE = 0,
             TIMER_IND,
             TIME_REMAIN,
@@ -51,7 +51,7 @@ class EhLcd : public rgb_lcd {
             BARGRAPH
         };
 
-        enum class EModes{MANUAL = 0, TIMER, CONTINUOUS};
+        enum class E_Modes{MANUAL = 0, TIMER, CONTINUOUS};
         const char ModeInd[3]={'M','T','C'};
     
     // ファンダメンタルな関数
@@ -77,9 +77,9 @@ class EhLcd : public rgb_lcd {
 
         // 表示アイテムの直接操作
 
-        void setBlink(const EDisplayItemName item, const bool mode);
-        void setVisible(const EDisplayItemName item, const bool visible);
-        void setText(const EDisplayItemName item, const String& Value);
+        void setBlink(const E_DisplayItemName item, const bool mode);
+        void setVisible(const E_DisplayItemName item, const bool visible);
+        void setText(const E_DisplayItemName item, const String& Value);
 
         // 表示内容を数値で指定するセッター
 
@@ -88,7 +88,7 @@ class EhLcd : public rgb_lcd {
         void setSensorlength(const uint8_t value);
         void setTimerperiod(const uint8_t value);
         void setTimerRemain(const uint8_t value);
-        void setMeasMode(const EModes meas_mode);
+        void setMeasMode(const E_Modes meas_mode);
 
         //  その他
 
@@ -96,7 +96,7 @@ class EhLcd : public rgb_lcd {
         void writeFrame(void);
         void setVacateI2Cbus(const bool flag);
 
-        // uint8_t itemName2Int(EDisplayItemName itemname){
+        // uint8_t itemName2Int(_ itemname){
         //     return static_cast<uint8_t>(itemname);
         // }
 

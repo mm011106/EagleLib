@@ -170,7 +170,7 @@ void EhLcd::setVacateI2Cbus(const bool flag){
 /// @brief 表示アイテムの直接操作:点滅モードの設定
 /// @param item：表示項目の指定 EDisplayItemNameの要素名で指定
 /// @param mode True=Blink, False=Hold
-void EhLcd::setBlink(const EDisplayItemName item, const bool mode){
+void EhLcd::setBlink(const E_DisplayItemName item, const bool mode){
     display_items[static_cast<uint8_t>(item)].mode = mode;
     display_items[static_cast<uint8_t>(item)].state = true;
     display_items[static_cast<uint8_t>(item)].refresh = true;
@@ -179,14 +179,14 @@ void EhLcd::setBlink(const EDisplayItemName item, const bool mode){
 /// @brief 表示・非表示の設定
 /// @param item：表示項目の指定 EDisplayItemNameの要素名で指定
 /// @param visible True=表示, False=非表示
-void EhLcd::setVisible(const EDisplayItemName item, const bool visible){
+void EhLcd::setVisible(const E_DisplayItemName item, const bool visible){
     display_items[static_cast<uint8_t>(item)].state = visible;
 };
 
 /// @brief 表示テキストの直接書き込み（非推奨）
 /// @param item：表示項目の指定 EDisplayItemNameの要素名で指定
 /// @param text 表示テキスト(String)
-void EhLcd::setText(const EDisplayItemName item, const String& text){
+void EhLcd::setText(const E_DisplayItemName item, const String& text){
     display_items[static_cast<uint8_t>(item)].text = text;
 };
 
@@ -204,8 +204,8 @@ bool EhLcd::setLevel(const uint16_t value){
 
     String msg = ("  "+String((float(value)/10.0),1));
     msg = msg.substring(msg.length()-5);
-    display_items[static_cast<uint8_t>(EDisplayItemName::LEVEL)].text=msg;
-    display_items[static_cast<uint8_t>(EDisplayItemName::LEVEL)].refresh = true;
+    display_items[static_cast<uint8_t>(E_DisplayItemName::LEVEL)].text=msg;
+    display_items[static_cast<uint8_t>(E_DisplayItemName::LEVEL)].refresh = true;
 
     return true;
 };
@@ -232,8 +232,8 @@ bool EhLcd::setBargraph(const uint16_t value){
         temp[index]=(unsigned char)(fine);
     };
     
-    display_items[static_cast<uint8_t>(EDisplayItemName::BARGRAPH)].text=temp;
-    display_items[static_cast<uint8_t>(EDisplayItemName::BARGRAPH)].refresh = true;
+    display_items[static_cast<uint8_t>(E_DisplayItemName::BARGRAPH)].text=temp;
+    display_items[static_cast<uint8_t>(E_DisplayItemName::BARGRAPH)].refresh = true;
 
     return true;
 };
@@ -253,8 +253,8 @@ void EhLcd::setSensorlength(const uint8_t value){
     String msg = ("  "+String(value));
     msg = msg.substring(msg.length()-3);
     sensor_length = msg +"inch";
-    display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].text = sensor_length;
-    display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].refresh = true;
+    display_items[static_cast<uint8_t>(E_DisplayItemName::SENSOR)].text = sensor_length;
+    display_items[static_cast<uint8_t>(E_DisplayItemName::SENSOR)].refresh = true;
 };
 
 /// @brief LCD表示内容を設定する：タイマ残り時間
@@ -262,15 +262,15 @@ void EhLcd::setSensorlength(const uint8_t value){
 void EhLcd::setTimerRemain(const uint8_t value){
     String msg = ("  "+String(value));
     msg = msg.substring(msg.length()-2);
-    display_items[static_cast<uint8_t>(EDisplayItemName::TIME_REMAIN)].text=msg;
-    display_items[static_cast<uint8_t>(EDisplayItemName::TIME_REMAIN)].refresh = true;
+    display_items[static_cast<uint8_t>(E_DisplayItemName::TIME_REMAIN)].text=msg;
+    display_items[static_cast<uint8_t>(E_DisplayItemName::TIME_REMAIN)].refresh = true;
 };
 
 /// @brief LCD表示内容を設定する：計測モード
 /// @param meas_mode 測定モード
-void EhLcd::setMeasMode(const EModes meas_mode){
-    display_items[static_cast<uint8_t>(EDisplayItemName::MODE)].text = ModeInd[static_cast<uint8_t>(meas_mode)];
-    display_items[static_cast<uint8_t>(EDisplayItemName::MODE)].refresh = true;
+void EhLcd::setMeasMode(const E_Modes meas_mode){
+    display_items[static_cast<uint8_t>(E_DisplayItemName::MODE)].text = ModeInd[static_cast<uint8_t>(meas_mode)];
+    display_items[static_cast<uint8_t>(E_DisplayItemName::MODE)].refresh = true;
 }
 
 /// @brief センサエラーの表示
@@ -280,14 +280,14 @@ void EhLcd::setError(const bool error){
     String msg = "";
     if (error){
         msg = "-ERROR-";
-        display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].mode = BLINK_MODE;
+        display_items[static_cast<uint8_t>(E_DisplayItemName::SENSOR)].mode = BLINK_MODE;
     } else {
         msg = sensor_length;
-        display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].mode = HOLD_MODE;
+        display_items[static_cast<uint8_t>(E_DisplayItemName::SENSOR)].mode = HOLD_MODE;
     }
-    display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].state = true; // BLINK_MODEからHOLD_MODEに戻したら、必ずstateをtrueにすること
-    display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].text = msg;
-    display_items[static_cast<uint8_t>(EDisplayItemName::SENSOR)].refresh = true;
+    display_items[static_cast<uint8_t>(E_DisplayItemName::SENSOR)].state = true; // BLINK_MODEからHOLD_MODEに戻したら、必ずstateをtrueにすること
+    display_items[static_cast<uint8_t>(E_DisplayItemName::SENSOR)].text = msg;
+    display_items[static_cast<uint8_t>(E_DisplayItemName::SENSOR)].refresh = true;
 }
 
 
