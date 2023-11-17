@@ -6,7 +6,7 @@
     * @param blink_period :点滅周期 1~199[CLK Cycle]
     * @return true:正常に設定 false:パラメタ異常（デフォルトを設定）
     */
-bool EH_LED::setMode(E_IllumiMode mode, uint16_t period ) {
+bool EH_LED::setMode(const E_IllumiMode& mode, const uint16_t& period ) {
     LED_mode = mode;
     blink_flag = true;
     if (0 == period || period>200) {

@@ -3,82 +3,82 @@
 
 /*!
     * @brief 状態遷移のためのトリガ信号を与えます
-    * @param  Statemachine::ETransit型   状態遷移のための信号名
+    * @param  Statemachine::E_Transit型   状態遷移のための信号名
     * @return true: statusが更新された false: 更新なし
     * @note 計測コマンド(command)もこの中でセットされる
     */
-bool Statemachine::setTransitSignal(ETransit signal){
+bool Statemachine::setTransitSignal(const E_Transit signal){
 
   if(DEBUG){Serial.print("(Signal:");}
   previous_machine_status = machine_status;
 
   switch (signal) {
     //  スイッチのクリック
-    case ETransit::CLICK :
+    case E_Transit::CLICK :
         if(DEBUG){Serial.print("CLICK)");}
-        if(machine_status == EStatus::TIMER){
-            machine_status = EStatus::MANUAL;
-            command = EMeasCommand::START;
+        if(machine_status == E_Status::TIMER){
+            machine_status = E_Status::MANUAL;
+            command = E_MeasCommand::START;
         }
-        else if(machine_status == EStatus::CONT){
-            machine_status = EStatus::TIMER;
-            command = EMeasCommand::STOP;
+        else if(machine_status == E_Status::CONT){
+            machine_status = E_Status::TIMER;
+            command = E_MeasCommand::STOP;
         } else {
-            command = EMeasCommand::IDLE;
+            command = E_MeasCommand::IDLE;
         }
         break;
 
     //  スイッチの長押し
-    case ETransit::LONG :
+    case E_Transit::LONG :
         if(DEBUG){Serial.print("LONG)");}
-        if (machine_status == EStatus::TIMER){
-            machine_status = EStatus::CONT;
-            command = EMeasCommand::START;
-        } else if (machine_status == EStatus::CONT){
-            machine_status = EStatus::TIMER;
-            command = EMeasCommand::STOP;
+        if (machine_status == E_Status::TIMER){
+            machine_status = E_Status::CONT;
+            command = E_MeasCommand::START;
+        } else if (machine_status == E_Status::CONT){
+            machine_status = E_Status::TIMER;
+            command = E_MeasCommand::STOP;
         } else {
-            command = EMeasCommand::IDLE;
+            command = E_MeasCommand::IDLE;
         }   
         break;
 
     //  タイマのタイムアップ
-    case ETransit::TIMEUP :
+    case E_Transit::TIMEUP :
         if(DEBUG){Serial.print("TIMEUP)");}
-        if(machine_status == EStatus::TIMER){
-            machine_status = EStatus::MANUAL;
-            command = EMeasCommand::START;
+        if(machine_status == E_Status::TIMER){
+            machine_status = E_Status::MANUAL;
+            command = E_MeasCommand::START;
         } else {
-            command = EMeasCommand::IDLE;
+            command = E_MeasCommand::IDLE;
         }   
         break;
 
     //  測定完了（一回計測で計測が完了した場合に発生する信号）
-    case ETransit::MEASCPL :
+    case E_Transit::MEASCPL :
         if(DEBUG){Serial.print("MEAS end)");}
-        if(machine_status == EStatus::MANUAL){
-            machine_status = EStatus::TIMER;
-            command = EMeasCommand::STOP;
+        if(machine_status == E_Status::MANUAL){
+            machine_status = E_Status::TIMER;
+            command = E_MeasCommand::STOP;
         } else {
-            command = EMeasCommand::IDLE;
+            command = E_MeasCommand::IDLE;
         }   
         break;
 
     //  測定エラー  計測が開始できなかった場合に発生
-    case ETransit::MEASERR :
+    case E_Transit::MEASERR :
         if(DEBUG){Serial.print("MEAS ERR!)");}
-        machine_status = EStatus::TIMER;
-        command = EMeasCommand::STOP;
+        machine_status = E_Status::TIMER;
+        command = E_MeasCommand::STOP;
         break;
 
     //  現状維持    （通常は使わない）
-    case ETransit::IDLE :
+    case E_Transit::IDLE :
         if(DEBUG){Serial.print("IDLE)");}
-        command = EMeasCommand::IDLE;
+        command = E_MeasCommand::IDLE;
     break;
 
     default:
-        command = EMeasCommand::IDLE;
+        command = E_MeasCommand::IDLE;
     break;
     }
   
@@ -106,18 +106,18 @@ bool Statemachine::hasStatusUpdated(void){
 };
 
 /// @brief 状態遷移に応じた計測部への指示を返します
-/// @return EMeasCommand型 測定命令
+/// @return E_MeasCommand型 測定命令
 /// @note hasStatusUpdated()==true 時に有効になります
-Statemachine::EMeasCommand Statemachine::getMeasCommand(void){
+Statemachine::E_MeasCommand Statemachine::getMeasCommand(void){
     return command;
 }
 
 /*!
 * @brief マシンの内部状態を返します
 * @param  
-* @return EStatus型 
+* @return E_Status型 
 */
-Statemachine::EStatus Statemachine::getStatus(void){
+Statemachine::E_Status Statemachine::getStatus(void){
     return machine_status;
 };
 

@@ -30,7 +30,7 @@ class Measurement {
     /*!
     * @brief 計測ユニットへのコマンド一覧
     */
-    enum class ECommand : uint8_t{
+    enum class E_Command : uint8_t{
         IDLE = 0,   // 何もしない、現状のまま
         START,      //  測定開始
         STOP        //  測定停止
@@ -39,7 +39,7 @@ class Measurement {
     /*!
     * @brief 動作モード一覧
     */
-    enum class EModes{
+    enum class E_Modes{
         MANUAL = 0,
         TIMER,
         CONTINUOUS
@@ -99,9 +99,9 @@ class Measurement {
  
 
     // ユニットの設定
-    void setCommand(Measurement::ECommand command);
-    void setMode(Measurement::EModes mode);
-    EModes getMode(void);
+    void setCommand(Measurement::E_Command command);
+    void setMode(Measurement::E_Modes mode);
+    E_Modes getMode(void);
 
     // 測定関連
     bool isReady(void);
@@ -182,7 +182,7 @@ class Measurement {
     float adc_gain_coeff = 0.0;
 
     //  現在の動作モードを保持
-    EModes present_mode = EModes::TIMER;
+    E_Modes present_mode = E_Modes::TIMER;
 
     // methods 
 

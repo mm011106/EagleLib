@@ -43,7 +43,7 @@ class EH_LED {
          * @param port_number:  LEDが接続されているポート番号（Arduino名もしくはSTM32ポート番号_ALT)
          * 
          */
-        EH_LED(uint32_t port_number){
+        EH_LED(const uint32_t& port_number){
             LED_port_number = port_number;
             pinMode(LED_port_number, OUTPUT);
         };
@@ -100,7 +100,7 @@ class EH_LED {
         };
 
 
-        bool setMode(E_IllumiMode mode = DEFAULT_ILLUMI_MODE, uint16_t blink_period = DEFAULT_BLINK_PERIOD  );
+        bool setMode(const E_IllumiMode& mode = DEFAULT_ILLUMI_MODE, const uint16_t& blink_period = DEFAULT_BLINK_PERIOD  );
         void clk_in(void);
 
         bool acquire(void);
