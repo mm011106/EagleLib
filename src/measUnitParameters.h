@@ -4,10 +4,11 @@
 // consts
 //  I2C adress 計測用のIC達
     namespace I2C_ADDR{
-    constexpr uint16_t ADC            = 0x48;   // 電圧・電流計測
-    constexpr uint16_t CURRENT_ADJ    = 0x60;   // 電流源調整用DA
-    constexpr uint16_t V_MON          = 0x49;   // 電圧出力用DAコンバータ
-    constexpr uint16_t PIO            = 0x20;   // GPIO IC  電流on/off  電流源エラー読み込み
+    constexpr uint16_t ADC            = 0x48;   // ADS1115  電圧・電流計測
+    constexpr uint16_t CURRENT_ADJ    = 0x60;   // MCP4725  電流源調整用DA
+    constexpr uint16_t V_MON          = 0x49;   // DAC80501 電圧出力用DAコンバータ
+    constexpr uint16_t PIO            = 0x20;   // MCP23008 GPIO IC  電流on/off  電流源エラー読み込み
+    constexpr uint16_t LCD            = 0x3E;   // Grove 16x2 LCD ドライバにアドレス指定は不要
     };
 
 // ADの読み値から電圧値を計算するための系数 [/ micro Volts/LSB]
