@@ -96,10 +96,6 @@ class EhLcd : public rgb_lcd {
         void writeFrame(void);
         void setVacateI2Cbus(const bool flag);
 
-        // uint8_t itemName2Int(_ itemname){
-        //     return static_cast<uint8_t>(itemname);
-        // }
-
 
     private:
    
