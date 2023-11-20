@@ -258,7 +258,7 @@ void EhLcd::setSensorlength(const uint8_t value){
 };
 
 /// @brief LCD表示内容を設定する：タイマ残り時間
-/// @param value タイマ残り時間
+/// @param value タイマ残り時間[min]
 void EhLcd::setTimerRemain(const uint8_t value){
     String msg = ("  "+String(value));
     msg = msg.substring(msg.length()-2);
