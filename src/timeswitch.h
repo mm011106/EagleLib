@@ -64,11 +64,14 @@ class TimeSwitch {
 
     // vars
 
-    //  タイマ周期設定値
+    //  タイマ周期設定値[min]
     uint16_t timer_period = DEFAULT_TIMER_PERIOD; 
 
     // 10ms単位のダウンカウンタ
     uint32_t counter_10ms = 0;
+
+    // 残時間[min]
+    uint16_t remaining_time = 0;
 
     // 内部信号
     bool update = false;

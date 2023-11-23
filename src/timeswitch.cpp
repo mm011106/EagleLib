@@ -14,7 +14,7 @@ bool TimeSwitch::init(const uint16_t period){
     // 10分単位の値に整理（切り捨て）
     timer_period = (period / 10);
     timer_period = timer_period * 10;
-    
+    remaining_time = timer_period;
     if (DEBUG) {Serial.print("Timer set to:"); Serial.println(timer_period);}
 
     counter_10ms = timer_period * COUNTS_PER_MINUTES;  
@@ -39,6 +39,9 @@ void TimeSwitch::clk_in(void){
     // 1分ごとに「更新」フラグを立てる
     if ((counter_10ms % COUNTS_PER_MINUTES)==0){
         update = true;
+        if (--remaining_time == 0){
+            remaining_time = timer_period;
+        }
         if (DEBUG) {Serial.print("a minutes elapse: ");}
     }
 
@@ -73,5 +76,5 @@ bool TimeSwitch::isActive(void){
 /// @brief タイマの残り時間を返します
 /// @return 残り時間[min]
 uint16_t TimeSwitch::getRemainingTime(void){
-    return (uint16_t)(counter_10ms / COUNTS_PER_MINUTES);
+    return remaining_time;
 };
