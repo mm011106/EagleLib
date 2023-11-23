@@ -25,16 +25,31 @@ class ParameterStorage : public Adafruit_FRAM_I2C {
 
     //  保存するパラメタの種類名を定義  要素の値は保存先のアドレス 
     enum class E_ParameterCategories : uint16_t{
-        SENSOR_LENGTH = 0x40,
-        TIMER_PERIOD = 0x48,
-        SERIAL_NUMBER =0x50,
-        SCALING = 0x60,
-        CAL_DATA = 0x70
+        CAL_FLAG = 0x00,    // bool キャリブレーション済み・未実施
+        CAL_DATE = 0x10,    // char[15] キャリブレーション実施日
+
+        SENSOR_LENGTH = 0x40,   // uint8_t センサ長[inch]
+        TIMER_PERIOD = 0x48,    // uint8_t タイマ周期設定[min]
+        SERIAL_NUMBER =0x50,    // char[15]   製造番号
+        SCALING = 0x60,         // 構造体 ScalingParameter スケーリング
+        CAL_DATA = 0x70         // 構造体 CalData キャリブレーション値
     };
     // instances
 
-    // vars
-    
+    // types,vars
+    struct CalData{
+        int16_t adc_offset_01;
+        int16_t adc_offset_23;
+        float_t adc_gain_error_01;
+        float_t adc_gain_error_23;
+        uint16_t vmon_da_offset;
+        uint16_t current_adj;
+    };
+    struct ScalingParameter{
+        uint16_t hi_side_scale;
+        uint16_t low_side_scale;
+    };
+
     // methods 
     /*!
     * @brief constructor  
