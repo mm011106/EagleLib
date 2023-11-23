@@ -8,7 +8,15 @@
 // Methodの実体
 
 /// @brief 内部パラメタの設定、デバイスドライバインスタンスの作成・初期化
-void Measurement::init(void){
+/// @return 正常起動:0  異常発生時はエラーコード
+//      bit0 : current_adj_dac 
+//      bit1 : v_mon_dac
+//      bit2 : pio
+//      bit3 : meas_adc エラーを検出できないので常に0
+uint16_t Measurement::init(void){
+    // どのハードウエアでエラーが出たかを検出する
+    uint16_t error_code = 0;
+
     // センサ長から内部パラメタを計算
     sensor_resistance = SENSOR_UNIT_IMP * (float)p_parameter->sensor_length;
     sensor_heat_propagation_time = p_parameter->sensor_length * (uint16_t)(1/HEAT_PROPERGATION_VEROCITY * 1000.0 * 1.2); // [ms]
@@ -34,8 +42,6 @@ void Measurement::init(void){
     
     // deviceドライバのインスタンス作成、初期化
 
-    bool f_init_succeed = true;
-
     // 電流源設定用DAC  初期化
     if(current_adj_dac){delete current_adj_dac;}
     current_adj_dac = new Adafruit_MCP4725;
@@ -44,7 +50,7 @@ void Measurement::init(void){
         setCurrent(p_parameter->current_set_default);
     } else {
         if(DEBUG){Serial.println("error on Current Source DAC.  ");}
-        f_init_succeed = false;
+        error_code = error_code | 1 ;
     }
 
     // アナログモニタ用DAC  初期化
@@ -56,11 +62,11 @@ void Measurement::init(void){
             setVmon(0);
         } else {
             if(DEBUG){Serial.println("error on Analog Monitor DAC.  ");}
-            f_init_succeed = false;
+            error_code = error_code | 2 ;
         }
     } else {
         if(DEBUG){Serial.println("error on Analog Monitor DAC.  ");}
-        f_init_succeed = false;
+        error_code = error_code | 2 ;
     }
 
     // PIO  初期化
@@ -75,7 +81,7 @@ void Measurement::init(void){
         pio->digitalWrite(PIO_PORT::CURRENT_ENABLE, CURRENT_OFF);
     } else {
         if(DEBUG){Serial.println("error on PIO.  ");}
-        f_init_succeed = false;
+        error_code = error_code | 4 ;
     }
 
     //  計測用ADコンバータ設定    PGA=x2   2.048V FS
@@ -93,7 +99,7 @@ void Measurement::init(void){
         Serial.print("ADC:"); Serial.print((uint32_t)meas_adc,HEX); Serial.print("/");Serial.println(sizeof(*meas_adc));
     }
 
-
+    return error_code;
 }  
 
 /// @brief CLKに同期した処理を行います 
@@ -106,7 +112,7 @@ void Measurement::clk_in(void){
     // 連続計測の処理
     if (present_mode == E_Modes::CONTINUOUS){
         //  1秒に一回計測
-        if (cont_meas_inteval_counter++ > CONT_MEAS_INTERVAL){
+        if (++cont_meas_inteval_counter > CONT_MEAS_INTERVAL){
             cont_meas_inteval_counter=0;
             should_measure = true;
         };
@@ -118,7 +124,7 @@ void Measurement::clk_in(void){
         // 熱伝搬時間の1/3ごとに計測
         //      伝搬時間中に３回計測して、２CLK余分に時間待ってから最終計測(else節）を実行
         //      should_measureフラグがCLK時間で連続して立たないように配慮
-        if (single_meas_counter++ <= (single_meas_period + 2)){
+        if (++single_meas_counter <= (single_meas_period + 2)){
             if ( (single_meas_counter % single_meas_interval) == 0){
                 single_last_meas = false;
                 should_measure = true;

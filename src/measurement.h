@@ -93,7 +93,7 @@ class Measurement {
     };
 
 
-    void init(void);
+    uint16_t init(void);
     void clk_in(void);
 
  
