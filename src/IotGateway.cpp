@@ -15,7 +15,6 @@
 void IotGateway::clk_in(void){
     if (payload.length() != 0){
         sendPayload();
-        clearPayload();
     }
     return;
 }
@@ -26,7 +25,7 @@ void IotGateway::clk_in(void){
     @return payloadの中身（文字列）
 
 */
-void IotGateway::setPayload(String json){
+void IotGateway::setPayload(const String& json){
   payload = json;
 
 }
@@ -47,7 +46,7 @@ String IotGateway::getPayload(void){
     @param value 値（文字列）
 
 */
-void IotGateway::addPayload(String key, String value){
+void IotGateway::addPayload(const String& key, const String& value){
   String quote = "\"";
   String node = quote + key + quote + ":" + quote + value + quote;
 
@@ -62,7 +61,7 @@ void IotGateway::addPayload(String key, String value){
     @param value 数値（整数）
 
 */
-void IotGateway::addPayload(String key, int32_t value){
+void IotGateway::addPayload(const String& key, const int32_t& value){
   String quote = "\"";
   String node = quote + key + quote + ":" +  String(value) ;
 
@@ -78,7 +77,7 @@ void IotGateway::addPayload(String key, int32_t value){
     @param deciPlac 出力する小数点以下桁数
 
 */
-void IotGateway::addPayload(String key, float value, uint8_t deciPlac){
+void IotGateway::addPayload(const String& key, const float& value, const uint8_t& deciPlac){
   String quote = "\"";
   String node = quote + key + quote + ":"  + String(value, deciPlac) ;
 
@@ -91,7 +90,7 @@ void IotGateway::addPayload(String key, float value, uint8_t deciPlac){
     @brief  データセパレータ(,)を入れながらpayloadにノードを足す   (private)
     @param node JSONの情報単位
 */
-void IotGateway::joinToPayload(String node){
+void IotGateway::joinToPayload(const String& node){
   if (payload.length() != 0)
     // payloadに何か既に入っている場合
     {payload = payload + "," + node ;} 

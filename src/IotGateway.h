@@ -7,7 +7,7 @@ class IotGateway : public HardwareSerial{
 
   public:
     /*!
-    @brief  コンストラクタ unit32タイプのピン指定だけを受け付けます
+    @brief  コンストラクタ 
     */
     IotGateway(uint32_t pin_rx, uint32_t pin_tx) : HardwareSerial(pin_rx, pin_tx){
 
@@ -15,12 +15,12 @@ class IotGateway : public HardwareSerial{
 
     void clk_in(void);
 
-    void setPayload(String json);
+    void setPayload(const String& json);
     String getPayload(void);
 
-    void addPayload(String key, String value);
-    void addPayload(String key, int32_t value);
-    void addPayload(String key, float value, uint8_t deciPlac);
+    void addPayload(const String& key, const String& value);
+    void addPayload(const String& key, const int32_t& value);
+    void addPayload(const String& key, const float& value, const uint8_t& deciPlac);
     
     
     /*!
@@ -36,14 +36,16 @@ class IotGateway : public HardwareSerial{
     @brief  payloadをUARTに出力
     @param void
     @return void
+    @note   payloadはクリアされます
     */
     void sendPayload(void){
       HardwareSerial::println(getPayload());
+      clearPayload();
     };
 
   private:
     String payload;
-    void joinToPayload(String node);
+    void joinToPayload(const String& node);
 };
 
 #endif // _IOTGATEWAY_H_
