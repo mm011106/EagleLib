@@ -34,7 +34,7 @@ public:
   CMD_CONFIG,   //3[RW] configuration :
   CMD_GAIN,     //4[RW] Gain
   CMD_TRIGGER,  //5[W] Trigger
-  CMD_NA6,      //6 :not appicable.
+  CMD_NA6,      //6 :not applicable.
   CMD_STATUS,   //7[R] Status
   CMD_DAC_BUF       //8[RW] DAC
   };
