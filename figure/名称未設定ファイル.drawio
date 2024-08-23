@@ -412,6 +412,9 @@
             <mxPoint x="58" y="1" as="offset" />
           </mxGeometry>
         </mxCell>
+        <mxCell id="-FkL4fDxpAOUluzFFI29-119" value="eh_LCD" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="-FkL4fDxpAOUluzFFI29-95">
+          <mxGeometry x="820" y="270" width="60" height="30" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
