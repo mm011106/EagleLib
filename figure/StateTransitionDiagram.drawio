@@ -10,7 +10,7 @@
         <mxCell id="8wJRnWF8QxpmrMgtNOpO-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;curved=1;" edge="1" parent="1" source="8wJRnWF8QxpmrMgtNOpO-2" target="8wJRnWF8QxpmrMgtNOpO-1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="8wJRnWF8QxpmrMgtNOpO-17" value="計測終了" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=8;" vertex="1" connectable="0" parent="8wJRnWF8QxpmrMgtNOpO-14">
+        <mxCell id="8wJRnWF8QxpmrMgtNOpO-17" value="計測終了" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" connectable="0" parent="8wJRnWF8QxpmrMgtNOpO-14">
           <mxGeometry x="-0.3649" y="7" relative="1" as="geometry">
             <mxPoint x="-30" y="-7" as="offset" />
           </mxGeometry>
@@ -27,7 +27,7 @@
             <mxPoint x="440" y="390" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="8wJRnWF8QxpmrMgtNOpO-18" value="&lt;span style=&quot;font-size: 8px;&quot;&gt;スイッチ長押し&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="8wJRnWF8QxpmrMgtNOpO-6">
+        <mxCell id="8wJRnWF8QxpmrMgtNOpO-18" value="&lt;span style=&quot;font-size: 10px;&quot;&gt;スイッチ長押し&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" connectable="0" parent="8wJRnWF8QxpmrMgtNOpO-6">
           <mxGeometry x="-0.1219" y="-10" relative="1" as="geometry">
             <mxPoint x="-9" y="-18" as="offset" />
           </mxGeometry>
@@ -38,18 +38,30 @@
             <mxPoint x="420" y="370" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="8wJRnWF8QxpmrMgtNOpO-19" value="スイッチクリック or 長押し" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=8;" vertex="1" connectable="0" parent="8wJRnWF8QxpmrMgtNOpO-9">
+        <mxCell id="8wJRnWF8QxpmrMgtNOpO-19" value="スイッチクリック or 長押し" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" connectable="0" parent="8wJRnWF8QxpmrMgtNOpO-9">
           <mxGeometry x="-0.2235" y="-11" relative="1" as="geometry">
-            <mxPoint x="-21" y="11" as="offset" />
+            <mxPoint x="19" y="21" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="8wJRnWF8QxpmrMgtNOpO-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;curved=1;" edge="1" parent="1" source="8wJRnWF8QxpmrMgtNOpO-1" target="8wJRnWF8QxpmrMgtNOpO-2">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="8wJRnWF8QxpmrMgtNOpO-16" value="TimeSwitch::hasOverflow or スイッチのクリック" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=8;" vertex="1" connectable="0" parent="8wJRnWF8QxpmrMgtNOpO-13">
+        <mxCell id="8wJRnWF8QxpmrMgtNOpO-16" value="TimeSwitch::hasOverflow or スイッチのクリック" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" connectable="0" parent="8wJRnWF8QxpmrMgtNOpO-13">
           <mxGeometry x="-0.211" y="3" relative="1" as="geometry">
-            <mxPoint x="35" y="11" as="offset" />
+            <mxPoint x="65" y="11" as="offset" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="8wJRnWF8QxpmrMgtNOpO-20" value="&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;MANUALから出る時: mode=TIMER,&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;font style=&quot;font-size: 8px;&quot;&gt;command = STOP&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;font style=&quot;font-size: 8px;&quot;&gt;を設定&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" vertex="1" parent="1">
+          <mxGeometry x="460" y="180" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="8wJRnWF8QxpmrMgtNOpO-21" value="&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;MANUALに入った時: mode=MAN,&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;font style=&quot;font-size: 8px;&quot;&gt;command = START&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;font style=&quot;font-size: 8px;&quot;&gt;を設定&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" vertex="1" parent="1">
+          <mxGeometry x="460" y="120" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="8wJRnWF8QxpmrMgtNOpO-22" value="&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;CONTに入った時:&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;mode = CONT,&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;font style=&quot;font-size: 8px;&quot;&gt;command = START&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;font style=&quot;font-size: 8px;&quot;&gt;を設定&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" vertex="1" parent="1">
+          <mxGeometry x="470" y="380" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="8wJRnWF8QxpmrMgtNOpO-23" value="&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;CONTから出る時:&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;mode = TIMER,&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;font style=&quot;font-size: 8px;&quot;&gt;command = STOP&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 8px;&quot;&gt;&lt;font style=&quot;font-size: 8px;&quot;&gt;を設定&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" vertex="1" parent="1">
+          <mxGeometry x="470" y="440" width="120" height="50" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
